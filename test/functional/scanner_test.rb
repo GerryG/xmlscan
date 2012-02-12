@@ -1,3 +1,6 @@
+# encoding: UTF-8
+
+require File.expand_path('../test_helper', File.dirname(__FILE__))
 #
 # tests/testscanner.rb
 #
@@ -7,9 +10,8 @@
 #
 
 require 'test/unit'
-require 'deftestcase'
 require 'xmlscan/scanner'
-require 'visitor'
+require File.expand_path('../helpers/visitor_helper', File.dirname(__FILE__))
 
 
 class TestVisitor < Test::Unit::TestCase
@@ -20,6 +22,8 @@ class TestVisitor < Test::Unit::TestCase
         i == 'valid_error' or i == 'warning' or /\Aon_/ =~ i
     }.sort
     actual = XMLScan::Visitor.instance_methods.sort
+    #STDERR << "Actual: #{actual}\n"
+    #STDERR << "Expected: #{expect}\n"
     assert_equal expect, actual
   end
 
@@ -35,7 +39,7 @@ class TestXMLScanner < Test::Unit::TestCase
   Visitor = RecordingVisitor.new_class(XMLScan::Visitor)
 
 
-  private
+  protected
 
   def setup
     @v = Visitor.new
@@ -50,29 +54,34 @@ class TestXMLScanner < Test::Unit::TestCase
 
   public
 
-  def test_kcode_e
-    @s.kcode = 'E'
-    assert_equal 'euc', @s.kcode
+  def test_optkey_e
+    @s.optkey = :e
+    assert_equal :e, @s.optkey
+    assert_equal "EUC-JP", @s.opt_encoding.name
   end
 
-  def test_kcode_s
-    @s.kcode = 'S'
-    assert_equal 'sjis', @s.kcode
+  def test_optkey_s
+    @s.optkey = :s
+    assert_equal :s, @s.optkey
+    assert_equal "Windows-31J", @s.opt_encoding.name
   end
 
-  def test_kcode_u
-    @s.kcode = 'U'
-    assert_equal 'utf8', @s.kcode
+  def test_optkey_u
+    @s.optkey = :u
+    assert_equal :u, @s.optkey
+    assert_equal "UTF-8", @s.opt_encoding.name
   end
 
-  def test_kcode_n
-    @s.kcode = 'N'
-    assert_equal 'none', @s.kcode
+  def test_optkey_n
+    @s.optkey = :n
+    assert_equal :n, @s.optkey
+    assert_equal "US-ASCII", @s.opt_encoding.name
   end
 
-  def test_kcode_nil
-    @s.kcode = nil
-    assert_equal nil, @s.kcode
+  def test_optkey_nil
+    @s.optkey = nil
+    assert_equal nil, @s.optkey
+    assert_equal nil, @s.opt_encoding
   end
 
 
@@ -1590,7 +1599,7 @@ class TestXMLScanner < Test::Unit::TestCase
 
   deftestcase 'prolog', <<-'TESTCASEEND'
 
-  '<?xml version="1.0"?><!DOCTYPE hoge><hoge>'
+  '<?xml version="1.0" ?><!DOCTYPE hoge><hoge>'
   [ :on_xmldecl ]
   [ :on_xmldecl_version, '1.0' ]
   [ :on_xmldecl_end ]
@@ -1743,7 +1752,3 @@ class TestXMLScanner < Test::Unit::TestCase
 
 end
 
-
-
-
-load "#{File.dirname($0)}/runtest.rb" if __FILE__ == $0

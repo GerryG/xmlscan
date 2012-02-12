@@ -1,3 +1,4 @@
+# encoding: UTF-8
 #
 # tests/xmlchar.rb
 #
@@ -37,10 +38,10 @@ class TestEncoding < Test::Unit::TestCase
   end
 
 
-  NONE = //n.kcode
-  EUC  = //e.kcode
-  SJIS = //s.kcode
-  UTF8 = //u.kcode
+  NONE = //n.options
+  EUC  = //e.options
+  SJIS = //s.options
+  UTF8 = //u.options
 
 
   def setup
@@ -60,6 +61,7 @@ class TestEncoding < Test::Unit::TestCase
     assert_kind_of XMLScan::EncodingClass, XMLScan::Encoding
   end
 
+=begin
   def test_preset_kcode
     assert_equal UTF8, XMLScan::Encoding.kcode('utf-8')
     assert_equal nil, XMLScan::Encoding.kcode('utf-16')
@@ -79,7 +81,7 @@ class TestEncoding < Test::Unit::TestCase
     assert_equal SJIS, XMLScan::Encoding.kcode('windows-31J')
     assert_equal EUC, XMLScan::Encoding.kcode('euc-jp')
     assert_equal EUC, XMLScan::Encoding.kcode('euc-kr')
-  end
+=end
 
 
   def test_alias
@@ -432,7 +434,3 @@ class TestEncoding < Test::Unit::TestCase
 
 end
 
-
-
-
-load "#{File.dirname($0)}/runtest.rb" if __FILE__ == $0

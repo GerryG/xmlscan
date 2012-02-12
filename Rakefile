@@ -1,76 +1,65 @@
-require "rake"
-require 'rake/contrib/rubyforgepublisher'
-require 'rake/clean'
-require 'rake/testtask'
-require 'rdoc/task'
 
-desc "Runs the Rspec suite"
-task(:default) do
-    run_suite
+# encoding: utf-8
+
+require 'rubygems'
+require 'bundler'
+
+begin
+  Bundler.setup(:default, :development)
+rescue Bundler::BundlerError => e
+  $stderr.puts e.message
+  $stderr.puts "Run `bundle install` to install missing gems"
+  exit e.status_code
 end
 
-desc "Runs the Rspec suite"
-task(:spec) do
-    run_suite
-end
-
-def run_suite
-    dir = File.dirname(__FILE__)
-      system("ruby #{dir}/spec/spec_suite.rb") || raise("Spec Suite failed")
-end
+require 'rake'
 
 begin
     require 'jeweler'
-    Jeweler::Tasks.new do |s|
-      s.name = "xmlscan"
-      s.version = '0.2.3'
-      s.summary = "The fastest XML parser written in 100% pure Ruby."
-      s.email = "gerryg@inbox.com"
-      s.homepage = "http://github.com/GerryG/xmlformat/"
-      s.description = "The fastest XML parser written in 100% pure Ruby."
-      s.authors = ["UENO Katsuhiro <katsu@blue.sky.or.jp>"]
-      s.files = FileList[
+    Jeweler::Tasks.new do |gem|
+      gem.name = "xmlscan"
+      gem.version = '0.2.3'
+      gem.license = "MIT"
+      gem.summary = "The fastest XML parser written in 100% pure Ruby."
+      gem.email = "gerryg@inbox.com"
+      gem.homepage = "http://github.com/GerryG/xmlformat/"
+      gem.description = "The fastest XML parser written in 100% pure Ruby."
+      gem.authors = ["UENO Katsuhiro <katsu@blue.sky.or.jp>"]
+      gem.files = FileList[
         '[A-Z]*',
         '*.rb',
         'lib/**/*.rb',
         'spec/**/*.rb' ].to_a
-      s.test_files = Dir.glob('spec/*_spec.rb')
-      s.has_rdoc = true
-      s.extra_rdoc_files = [ "README.rdoc", "CHANGES" ]
-      s.rdoc_options = ["--main", "README.rdoc", "--inline-source", "--line-numbers"]
-                                                                                                                                                                end
+      gem.test_files = Dir.glob('spec/*_spec.rb')
+      gem.has_rdoc = true
+      gem.extra_rdoc_files = [ "README.rdoc", "CHANGES" ]
+      gem.rdoc_options = ["--main", "README.rdoc", "--inline-source", "--line-numbers"]
+    end
 rescue LoadError
     puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
 end
 
-=begin
-class Jeweler
-  module Commands
-    class ReleaseToRubyforge
-      def run
-        raise NoRubyForgeProjectInGemspecError unless @gemspec.rubyforge_project
-        @rubyforge.configure rescue nil
+Jeweler::RubygemsDotOrgTasks.new
 
-        output.puts 'Logging in rubyforge'
-        @rubyforge.login
+require 'rspec/core'
+require 'rspec/core/rake_task'
+RSpec::Core::RakeTask.new(:spec) do |spec|
+  spec.pattern = FileList['spec/**/*_spec.rb']
+end
 
-        @rubyforge.userconfig['release_notes'] = @gemspec.description if @gemspec.description
-        @rubyforge.userconfig['preformatted'] = true
+RSpec::Core::RakeTask.new(:rcov) do |spec|
+  spec.pattern = 'spec/**/*_spec.rb'
+  spec.rcov = true
+end
 
-        output.puts "Releasing #{@gemspec.name}-#{@version} to #{@gemspec.rubyforge_project}"
-        begin
-          @rubyforge.add_release(@gemspec.rubyforge_project, RUBYFORGE_PACKAGE_NAME, @version.to_s, @gemspec_helper.gem_path)
-        rescue StandardError => e
-          case e.message
-            when /no <group_id> configured for <#{Regexp.escape @gemspec.rubyforge_project}>/
-              raise RubyForgeProjectNotConfiguredError, @gemspec.rubyforge_project
-            when /no <package_id> configured for <#{Regexp.escape @gemspec.name}>/i
-              raise MissingRubyForgePackageError, @gemspec.name
-            else
-              raise
-          end
-        end
-      end
-    end
-  end
-=end
+task :default => :spec
+
+require 'rdoc/task'
+Rake::RDocTask.new do |rdoc|
+  version = File.exist?('VERSION') ? File.read('VERSION') : ""
+
+  rdoc.rdoc_dir = 'rdoc'
+  rdoc.title = "xmlscan #{version}"
+  rdoc.rdoc_files.include('README*')
+  rdoc.rdoc_files.include('lib/**/*.rb')
+end

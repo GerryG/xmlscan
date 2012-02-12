@@ -1,3 +1,4 @@
+# encoding: UTF-8
 #
 # tests/testhtmlscan.rb
 #
@@ -7,9 +8,8 @@
 #
 
 require 'test/unit'
-require 'deftestcase'
 require 'xmlscan/htmlscan'
-require 'visitor'
+require 'visitor_helper'
 
 
 class TestHTMLScanner < Test::Unit::TestCase
@@ -746,7 +746,3 @@ class TestHTMLScannerCDATA < Test::Unit::TestCase
 
 end
 
-
-
-
-load "#{File.dirname($0)}/runtest.rb" if __FILE__ == $0

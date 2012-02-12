@@ -1,3 +1,4 @@
+# encoding: UTF-8
 #
 # tests/xmlchar.rb
 #
@@ -7,7 +8,6 @@
 #
 
 require 'test/unit'
-require 'deftestcase'
 require 'xmlscan/xmlchar'
 
 
@@ -135,8 +135,3 @@ class TestXMLScannerStrict < Test::Unit::TestCase
 
 end
 
-
-
-
-
-load "#{File.dirname($0)}/runtest.rb" if __FILE__ == $0

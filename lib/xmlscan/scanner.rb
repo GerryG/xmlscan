@@ -1,3 +1,4 @@
+# encoding: UTF-8
 #
 # xmlscan/scanner.rb
 #
@@ -291,16 +292,12 @@ module XMLScan
       @visitor = visitor
       @decoration = nil
       @src = nil
-      @kcode = nil
+      @optkey = nil
     end
 
+    attr_accessor :optkey
 
-    def kcode=(kcode)
-      @kcode = Regexp.new('', nil, kcode || '').kcode
-      kcode
-    end
-
-    attr_reader :kcode
+    def opt_encoding() OptRegexp::RE_ENCODINGS[optkey] end
 
 
     def decorate(decoration)
@@ -346,6 +343,15 @@ module XMLScan
 
     def on_xmldecl
       @visitor.on_xmldecl
+    end
+
+    def on_xmldecl_key(key, str)
+      meth = "on_xmldecl_#{key}"
+      if @visitor.respond_to? meth
+        @visitor.send meth, str
+      else
+        @visitor.on_xmldecl_other key, str
+      end
     end
 
     def on_xmldecl_version(str)
@@ -478,21 +484,39 @@ module XMLScan
 
     private
 
-    module KcodeRegexp
+    module OptRegexp
+      UTFSTR = "é"
+      S_OPT_EXAMPLE = "".encode Encoding.find('Windows-31J')
+      E_OPT_EXAMPLE = "".encode Encoding.find('EUC-JP')
+
+      RE_ENCODINGS = {
+        :n=>/e/n.encoding,
+        :e=>/#{E_OPT_EXAMPLE}/e.encoding,
+        :s=>/#{S_OPT_EXAMPLE}/s.encoding,
+        :u=>/#{UTFSTR}/u.encoding
+      }
+
+      RE_ENCODING_OPTIONS = {
+        :n=>/e/n.options,
+        :e=>/#{E_OPT_EXAMPLE}/e.options,
+        :s=>/#{S_OPT_EXAMPLE}/s.options,
+        :u=>/#{UTFSTR}/u.options
+      }
+
       private
-      def kcode_regexp(re)
+      def opt_regexp(re)
         h = {}
-        [ //n.kcode, //e.kcode, //s.kcode, //u.kcode ].each { |i|
-          h[i] = Regexp.new(re, nil, i)
+        RE_ENCODING_OPTIONS.each { |k,opt|
+          h[k] = Regexp.new(re, opt)
         }
         h.default = Regexp.new(re)
         h
       end
     end
-    extend KcodeRegexp
+    extend OptRegexp
 
 
-    InvalidEntityRef = kcode_regexp('(?=[^#\d\w]|\z)')
+    InvalidEntityRef = opt_regexp('(?=[^#\d\w]|\z)')
 
     def scan_chardata(s)
       while true
@@ -504,7 +528,7 @@ module XMLScan
           ref = nil
           $'.split('&', -1).each { |s|
             unless /(?!\A);|(?=[ \t\r\n])/n =~ s and not $&.empty? then
-              if InvalidEntityRef[@kcode] =~ s and not (ref = $`).strip.empty?
+              if InvalidEntityRef[@optkey] =~ s and not (ref = $`).strip.empty?
               then
                 parse_error "reference to `#{ref}' doesn't end with `;'"
               else
@@ -543,7 +567,7 @@ module XMLScan
         ref = nil
         $'.split('&', -1).each { |s|
           unless /(?!\A);|(?=[ \t\r\n])/n =~ s and not $&.empty? then
-            if InvalidEntityRef[@kcode] =~ s and not (ref = $`).strip.empty?
+            if InvalidEntityRef[@optkey] =~ s and not (ref = $`).strip.empty?
             then
               parse_error "reference to `#{ref}' doesn't end with `;'"
             else
@@ -625,11 +649,11 @@ module XMLScan
     end
 
 
-    CDATAPattern = kcode_regexp('\]\]\z')
+    CDATAPattern = opt_regexp('\]\]\z')
 
     def scan_cdata(s)
       cdata = s
-      re = CDATAPattern[@kcode]
+      re = CDATAPattern[@optkey]
       until re =~ cdata and @src.close_tag
         s = @src.get_plain
         unless s then
@@ -848,15 +872,17 @@ module XMLScan
     end
 
 
-    XMLDeclPattern = kcode_regexp(%q{[ \t\n\r]([\-_\d\w]+)[ \t\n\r]*=[ \t\n\r]*('[^']*'?|"[^"]*"?)|(\?\z)|([\-_.\d\w]+|[^ \t\n\r])}) #'
+    XMLDeclPattern = opt_regexp(%q{[ \t\n\r]([\-_\d\w]+)[ \t\n\r]*=[ \t\n\r]*('[^']*'?|"[^"]*"?)|(\?\z)|([\-_.\d\w]+|[^ \t\n\r])}) #'
 
     def scan_xmldecl(s)
       endmark = nil
+      info = nil
       state = 0
       on_xmldecl
       begin
         continue = false
-        s.scan(XMLDeclPattern[@kcode]) { |key,val,endmark,error|
+        s.scan(XMLDeclPattern[@optkey]) { |key,val,endmark,error|
+          info = "#{key}::#{val}::#{endmark}::#{error}"
           if key then
             qmark = val.slice!(0,1)     # remove quotation marks
             if val[-1] == qmark[0] then
@@ -868,32 +894,18 @@ module XMLScan
                 endmark = true
               end
             end
-            if state == 0 and key == 'version' then
-              on_xmldecl_version val
-              state = 1
-            elsif state == 1 and key == 'encoding' then
-              on_xmldecl_encoding val
-              state = 2
-            elsif state >= 1 and key == 'standalone' then
-              on_xmldecl_standalone val
-              state = 3
-            else
-              state = 3
-              if key == 'version' then
-                parse_error "version declaration must not be here"
-                on_xmldecl_version val
-              elsif key == 'encoding' then
-                parse_error "encoding declaration must not be here"
-                on_xmldecl_encoding val
-                state = 2 if state < 2
-              elsif key == 'standalone' then
-                parse_error "standalone declaration must not be here"
-                on_xmldecl_standalone val
-              else
-                parse_error "unknown declaration `#{key}' in XML declaration"
-                on_xmldecl_other key, val
+            state = case state
+                when 0; key == 'version' ? 1 : 4
+                when 1; key == 'encoding' ? 2 : 4
+                else    key == 'standalone' ? 3 : 4
               end
-            end
+            if state == 4
+                parse_error %w{version encoding standalone}.member?(key) ? 
+                    "#{key} declaration must not be here" :
+                    "unknown declaration `#{key}' in XML declaration"
+                state = 3
+              end
+            on_xmldecl_key key, val
           elsif endmark then
             unless @src.close_tag then
               parse_error "unexpected `#{endmark}' found in XML declaration"
@@ -901,7 +913,8 @@ module XMLScan
             end
             # here always exit the loop.
           else
-            parse_error "parse error at `#{error}'"
+            #parse_error "parse error at `#{error}'"
+            parse_error "ps error at #{info}, `#{error}'"
           end
         }
       end while !endmark and continue || s = @src.get_plain
@@ -911,13 +924,13 @@ module XMLScan
     end
 
 
-    SkipDTD = kcode_regexp(%q{(['"]|\A<!--|\A<\?|--\z|\?\z)|\]\s*\z}) #'
+    SkipDTD = opt_regexp(%q{(['"]|\A<!--|\A<\?|--\z|\?\z)|\]\s*\z}) #'
 
     def skip_internal_dtd(s)
       quote = nil
       continue = true
       begin                                         # skip until `]>'
-        s.scan(SkipDTD[@kcode]) { |q,|  #'
+        s.scan(SkipDTD[@optkey]) { |q,|  #'
           if quote then
             quote = nil if quote == q and quote.size == 1 || @src.tag_end?
           elsif q then
@@ -949,12 +962,12 @@ module XMLScan
     end
 
 
-    DoctypePattern = kcode_regexp(%q{[ \t\n\r](?:([^ \t\n\r\/'"=\[]+)|('[^']*'?|"[^"]*"?))|([\-_.\d\w]+|[^ \t\n\r])}) #"
+    DoctypePattern = opt_regexp(%q{[ \t\n\r](?:([^ \t\n\r\/'"=\[]+)|('[^']*'?|"[^"]*"?))|([\-_.\d\w]+|[^ \t\n\r])}) #"
 
     def scan_doctype(s)
       root = syspub = sysid = pubid = nil
       internal_dtd = false
-      re = DoctypePattern[@kcode]
+      re = DoctypePattern[@opt]
       begin
         if re =~ s then
           name, str, delim, s = $1, $2, $3, $'

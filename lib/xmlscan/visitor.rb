@@ -1,3 +1,4 @@
+# encoding: UTF-8
 #
 # xmlscan/visitor.rb
 #
@@ -54,6 +55,9 @@ module XMLScan
     end
 
     def on_xmldecl
+    end
+
+    def on_xmldecl_key(key, str)
     end
 
     def on_xmldecl_version(str)

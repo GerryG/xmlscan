@@ -1,3 +1,6 @@
+# encoding: UTF-8
+
+require File.expand_path('../test_helper', File.dirname(__FILE__))
 #
 # tests/testparser.rb
 #
@@ -7,9 +10,8 @@
 #
 
 require 'test/unit'
-require 'deftestcase'
 require 'xmlscan/parser'
-require 'visitor'
+require File.expand_path('../helpers/visitor_helper', File.dirname(__FILE__))
 
 
 class TestXMLParser < Test::Unit::TestCase
@@ -24,9 +26,11 @@ class TestXMLParser < Test::Unit::TestCase
   def setup
     @v = Visitor.new
     @s = XMLScan::XMLParser.new(@v)
+    warn "setup #{@v.inspect}, #{@s.inspect}"
   end
 
   def parse(src)
+    warn "parse #{src.inspect}"
     @s.parse src
     @v.result
   end
@@ -586,6 +590,3 @@ class TestXMLParser < Test::Unit::TestCase
 end
 
 
-
-
-load "#{File.dirname($0)}/runtest.rb" if __FILE__ == $0

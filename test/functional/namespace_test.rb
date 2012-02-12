@@ -1,3 +1,4 @@
+# encoding: UTF-8
 #
 # tests/namespace.rb
 #
@@ -7,9 +8,8 @@
 #
 
 require 'test/unit'
-require 'deftestcase'
 require 'xmlscan/namespace'
-require 'visitor'
+require 'visitor_helper'
 
 
 class TestXMLNamespace < Test::Unit::TestCase
@@ -451,7 +451,3 @@ class TestXMLNamespace < Test::Unit::TestCase
 
 end
 
-
-
-
-load "#{File.dirname($0)}/runtest.rb" if __FILE__ == $0

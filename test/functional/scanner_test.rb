@@ -18,13 +18,11 @@ class TestVisitor < Test::Unit::TestCase
 
   def test_method_defined
     expect = XMLScan::XMLScanner.private_instance_methods.select { |i|
-      i == 'parse_error' or i == 'wellformed_error' or
-        i == 'valid_error' or i == 'warning' or /\Aon_/ =~ i
+      [:parse_error, :wellformed_error, :valid_error, :warning].member?(i) or
+      /\Aon_/ =~ i
     }.sort
     actual = XMLScan::Visitor.instance_methods.sort
-    #STDERR << "Actual: #{actual}\n"
-    #STDERR << "Expected: #{expect}\n"
-    assert_equal expect, actual
+    assert_equal expect, actual, "Check visitor methods"
   end
 
 end

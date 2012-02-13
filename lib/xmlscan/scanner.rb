@@ -348,9 +348,9 @@ module XMLScan
     def on_xmldecl_key(key, str)
       meth = "on_xmldecl_#{key}"
       if @visitor.respond_to? meth
-        @visitor.send meth, str
+        self.send meth, str
       else
-        @visitor.on_xmldecl_other key, str
+        self.send :on_xmldecl_other, key, str
       end
     end
 
@@ -881,7 +881,6 @@ module XMLScan
       on_xmldecl
       begin
         continue = false
-        STDERR << "scanning #{s.inspect}\n"
         s.scan(XMLDeclPattern[@optkey]) { |key,val,endtok,error|
           if key then
             qmark = val.slice!(0,1)     # remove quotation marks
@@ -918,11 +917,9 @@ module XMLScan
             parse_error "parse error at `#{error}'"
           end
         }
-        STDERR << "em: #{endmark}, c:#{continue}\n"
       end while !endmark and continue || s = @src.get_plain
       parse_error "unterminated XML declaration meets EOF" unless s or endmark
       parse_error "no declaration found in XML declaration" if state == 0
-      STDERR << "xmldecl_end\n"
       on_xmldecl_end
     end
 

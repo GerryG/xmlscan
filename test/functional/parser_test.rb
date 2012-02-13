@@ -10,8 +10,8 @@ require File.expand_path('../test_helper', File.dirname(__FILE__))
 #
 
 require 'test/unit'
-require 'xmlscan/parser'
 require File.expand_path('../helpers/visitor_helper', File.dirname(__FILE__))
+require 'xmlscan/parser'
 
 
 class TestXMLParser < Test::Unit::TestCase

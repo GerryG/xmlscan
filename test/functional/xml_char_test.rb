@@ -85,7 +85,7 @@ class TestXMLChar < Test::Unit::TestCase
     errs=[]
     Testcases.each { |str,expect,|
       n=n+1
-      errs << "#{n}:#{str.inspect}" unless expect == (str.valid_encoding? && valid_chardata?(str))
+      errs << "#{n}[#{expect}]#{str.inspect}" unless expect == (str.valid_encoding? && valid_chardata?(str))
     }
     assert errs == [], "Invalid chardata #{errs*"\n"}"
   end
@@ -95,7 +95,7 @@ class TestXMLChar < Test::Unit::TestCase
     errs=[]
     Testcases.each { |str,dummy,expect,|
       n=n+1
-      errs << "#{n}:#{str.inspect}" unless expect == (str.valid_encoding? && valid_nmtoken?(str))
+      errs << "#{n}[#{expect}]#{str.inspect}" unless expect == (str.valid_encoding? && valid_nmtoken?(str))
     }
     assert errs == [], "Invalid token #{errs*"\n"}"
   end
@@ -105,7 +105,7 @@ class TestXMLChar < Test::Unit::TestCase
     errs=[]
     Testcases.each { |str,dummy,dummy1,expect, *a|
       n=n+1
-      errs << "#{n}:#{str.inspect}" unless expect == (str.valid_encoding? && valid_name?(str))
+      errs << "#{n}[#{expect}]#{str.inspect}" unless expect == (str.valid_encoding? && valid_name?(str))
        
     }
     assert errs == [], "Invalid names #{errs*"\n"}"

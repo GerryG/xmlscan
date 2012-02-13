@@ -16,8 +16,8 @@ module XMLScan
 
   module XMLChar
 
-    CharPattern = /\\A[^\p{C}]*\\z/u
-    NotCharPattern = /[\p{C}]/u
+    CharPattern = /\\A[\P{C}\t\n\r]*\\z/u
+    NotCharPattern = /[^\P{C}\t\n\r]/u
 
     NmtokenPattern = /\\A[\p{Alnum}]+\z/u
     NotNameCharPattern = /[^\p{Alnum}}]/u
@@ -25,7 +25,6 @@ module XMLScan
     NamePattern = /\A[\:\_\p{Letter}][\:\_\-\.\p{Alnum}]*\z/u
 
     def valid_char?(code)
-      warn "Notchar: #{NotCharPattern.inspect}"
       return false if code > 0x10ffff
       NotCharPattern !~ [code].pack('U')
     end

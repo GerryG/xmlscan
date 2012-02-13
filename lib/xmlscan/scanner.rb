@@ -135,9 +135,9 @@ module XMLScan
               last = nil
               break
             end
-            a = src.split(/(?=<|>[<>])|>/n, -1)
+            a = src.split(/(?=<|>[<>])|>/, -1)
             if last then
-              unless /\A[<>]/n =~ a.first then
+              unless /\A[<>]/ =~ a.first then
                 a[0] = last << (a.first || '')
               else
                 push last
@@ -214,12 +214,12 @@ module XMLScan
     def inspect
       a = []
       reverse_each { |i|
-        a.push ">" unless /\A[<>]/n =~ i
+        a.push ">" unless /\A[<>]/ =~ i
         a.push i.inspect
       }
       last = []
       if @last then
-        last.push ">" unless /\A[<>]/n =~ @last
+        last.push ">" unless /\A[<>]/ =~ @last
         last.push @last.inspect
       end
       a.push '#eof' if @eof
@@ -249,7 +249,7 @@ module XMLScan
       def provided_options
         options = []
         private_instance_methods.each { |i|
-          options.push $' if /\Aapply_option_/n =~ i
+          options.push $' if /\Aapply_option_/ =~ i
         }
         options
       end
@@ -520,14 +520,14 @@ module XMLScan
 
     def scan_chardata(s)
       while true
-        unless /&/n =~ s then
+        unless /&/ =~ s then
           on_chardata s
         else
           s = $`
           on_chardata s unless s.empty?
           ref = nil
           $'.split('&', -1).each { |s|
-            unless /(?!\A);|(?=[ \t\r\n])/n =~ s and not $&.empty? then
+            unless /(?!\A);|(?=[ \t\r\n])/ =~ s and not $&.empty? then
               if InvalidEntityRef[@optkey] =~ s and not (ref = $`).strip.empty?
               then
                 parse_error "reference to `#{ref}' doesn't end with `;'"
@@ -539,11 +539,11 @@ module XMLScan
             end
             ref = $`
             s = $'
-            if /\A[^#]/n =~ ref then
+            if /\A[^#]/ =~ ref then
               on_entityref ref
-            elsif /\A#(\d+)\z/n =~ ref then
+            elsif /\A#(\d+)\z/ =~ ref then
               on_charref $1.to_i
-            elsif /\A#x([\dA-Fa-f]+)\z/n =~ ref then
+            elsif /\A#x([\dA-Fa-f]+)\z/ =~ ref then
               on_charref_hex $1.hex
             else
               parse_error "invalid character reference `#{ref}'"
@@ -559,14 +559,14 @@ module XMLScan
 
 
     def scan_attvalue(s)     # almostly copy & paste from scan_chardata
-      unless /&/n =~ s then
+      unless /&/ =~ s then
         on_attr_value s
       else
         s = $`
         on_attr_value s unless s.empty?
         ref = nil
         $'.split('&', -1).each { |s|
-          unless /(?!\A);|(?=[ \t\r\n])/n =~ s and not $&.empty? then
+          unless /(?!\A);|(?=[ \t\r\n])/ =~ s and not $&.empty? then
             if InvalidEntityRef[@optkey] =~ s and not (ref = $`).strip.empty?
             then
               parse_error "reference to `#{ref}' doesn't end with `;'"
@@ -578,11 +578,11 @@ module XMLScan
           end
           ref = $`
           s = $'
-          if /\A[^#]/n =~ ref then
+          if /\A[^#]/ =~ ref then
             on_attr_entityref ref
-          elsif /\A#(\d+)\z/n =~ ref then
+          elsif /\A#(\d+)\z/ =~ ref then
             on_attr_charref $1.to_i
-          elsif /\A#x([\dA-Fa-f]+)\z/n =~ ref then
+          elsif /\A#x([\dA-Fa-f]+)\z/ =~ ref then
             on_attr_charref_hex $1.hex
           else
             parse_error "invalid character reference `#{ref}'"
@@ -596,7 +596,7 @@ module XMLScan
     def scan_comment(s)
       s[0,4] = ''  # remove `<!--'
       comm = ''
-      until /--/n =~ s
+      until /--/ =~ s
         comm << s
         s = @src.get_plain
         unless s then
@@ -613,7 +613,7 @@ module XMLScan
         end
         parse_error "comment includes `--'"
         comm << '--'
-        until /--/n =~ s     # copy & paste for performance
+        until /--/ =~ s     # copy & paste for performance
           comm << s
           s = @src.get_plain
           unless s then
@@ -628,7 +628,7 @@ module XMLScan
 
 
     def scan_pi(s)
-      unless /\A<\?([^ \t\n\r?]+)(?:[ \t\n\r]+|(?=\?\z))/n =~ s then
+      unless /\A<\?([^ \t\n\r?]+)(?:[ \t\n\r]+|(?=\?\z))/ =~ s then
         parse_error "parse error at `<?'"
         s << '>' if @src.close_tag
         on_chardata s
@@ -691,7 +691,7 @@ module XMLScan
           s << '>' if @src.close_tag
           return on_chardata('</' << s)
         end
-      elsif /[ \t\n\r]+/n =~ s then
+      elsif /[ \t\n\r]+/ =~ s then
         s1, s2 = $`, $'
         if s1.empty? then                # </ tag
           parse_error "parse error at `</'"
@@ -732,9 +732,9 @@ module XMLScan
 
 
     def found_stag_error(s)
-      if /\A[\/='"]/n =~ s then
+      if /\A[\/='"]/ =~ s then
         tok, s = $&, $'
-      elsif /(?=[ \t\n\r\/='"])/n =~ s then
+      elsif /(?=[ \t\n\r\/='"])/ =~ s then
         tok, s = $`, $'
       else
         tok, s = s, nil
@@ -745,7 +745,7 @@ module XMLScan
 
 
     def scan_stag(s)
-      unless /(?=[\/ \t\n\r='"])/n =~ s then
+      unless /(?=[\/ \t\n\r='"])/ =~ s then
         name = s
         name[0,1] = ''        # remove `<'
         if name.empty? then
@@ -773,7 +773,7 @@ module XMLScan
         key,val,error,qmark,c = nil
         begin
           continue = false
-          s.scan(/[ \t\n\r]([^= \t\n\r\/'"]+)[ \t\n\r]*=[ \t\n\r]*('[^']*'?|"[^"]*"?)|\/\z|([^ \t\n\r][\S\s]*)/n
+          s.scan(/[ \t\n\r]([^= \t\n\r\/'"]+)[ \t\n\r]*=[ \t\n\r]*('[^']*'?|"[^"]*"?)|\/\z|([^ \t\n\r][\S\s]*)/
                  ) { |key,val,error|
             if key then                # key="value"
               on_attribute key
@@ -840,7 +840,7 @@ module XMLScan
           elsif c == ?! then
             if s[2] == ?- and s[3] == ?- then
               scan_comment s
-            elsif /\A<!\[CDATA\[/n =~ s then
+            elsif /\A<!\[CDATA\[/ =~ s then
               scan_cdata $'
             else
               scan_bang_tag s
@@ -1032,7 +1032,7 @@ module XMLScan
 
 
     def scan_prolog(s)
-      if /\A<\?xml(?=[ \t\n\r])/n =~ s then
+      if /\A<\?xml(?=[ \t\n\r])/ =~ s then
         scan_xmldecl $'
         s = @src.get
       end
@@ -1043,7 +1043,7 @@ module XMLScan
           if (c = s[1]) == ?! then
             if s[2] == ?- and s[3] == ?- then
               scan_comment s
-            elsif /\A<!DOCTYPE(?=[ \t\n\r])/n =~ s and doctype then
+            elsif /\A<!DOCTYPE(?=[ \t\n\r])/ =~ s and doctype then
               doctype = false
               scan_doctype $'
             else

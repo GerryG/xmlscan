@@ -1,4 +1,6 @@
 # encoding: UTF-8
+
+require File.expand_path('../test_helper', File.dirname(__FILE__))
 #
 # tests/namespace.rb
 #
@@ -9,7 +11,7 @@
 
 require 'test/unit'
 require 'xmlscan/namespace'
-require 'visitor_helper'
+require File.expand_path('../helpers/visitor_helper', File.dirname(__FILE__))
 
 
 class TestXMLNamespace < Test::Unit::TestCase
@@ -29,7 +31,7 @@ class TestXMLNamespace < Test::Unit::TestCase
   end
 
 
-  private
+  protected
 
   def setup
     @v = Visitor.new

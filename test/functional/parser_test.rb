@@ -21,7 +21,7 @@ class TestXMLParser < Test::Unit::TestCase
   Visitor = RecordingVisitor.new_class(XMLScan::Visitor)
 
 
-  private
+  protected
 
   def setup
     @v = Visitor.new

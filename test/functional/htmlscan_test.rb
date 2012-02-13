@@ -1,5 +1,7 @@
 # encoding: UTF-8
 #
+require File.expand_path('../test_helper', File.dirname(__FILE__))
+#
 # tests/testhtmlscan.rb
 #
 #   Copyright (C) UENO Katsuhiro 2002
@@ -9,7 +11,7 @@
 
 require 'test/unit'
 require 'xmlscan/htmlscan'
-require 'visitor_helper'
+require File.expand_path('../helpers/visitor_helper', File.dirname(__FILE__))
 
 
 class TestHTMLScanner < Test::Unit::TestCase
@@ -19,7 +21,7 @@ class TestHTMLScanner < Test::Unit::TestCase
   Visitor = RecordingVisitor.new_class(XMLScan::Visitor)
 
 
-  private
+  protected
 
   def setup
     @v = Visitor.new
@@ -690,7 +692,7 @@ class TestHTMLScannerCDATA < Test::Unit::TestCase
   end
 
 
-  private
+  protected
 
   def setup
     @v = CDATAContentTestVisitor.new

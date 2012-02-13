@@ -1,4 +1,6 @@
 # encoding: UTF-8
+
+require File.expand_path('../test_helper', File.dirname(__FILE__))
 #
 # tests/xmlchar.rb
 #
@@ -9,6 +11,7 @@
 
 require 'test/unit'
 require 'xmlscan/xmlchar'
+require File.expand_path('../helpers/visitor_helper', File.dirname(__FILE__))
 
 
 class TestXMLChar < Test::Unit::TestCase
@@ -62,20 +65,26 @@ class TestXMLChar < Test::Unit::TestCase
 
 
   def test_valid_chardata_p
+    n=0
     Testcases.each { |str,expect,|
-      assert_equal expect, valid_chardata?(str), str.inspect
+      n=n+1
+      assert_equal expect, valid_chardata?(str), "#{n}:#{str.inspect}"
     }
   end
 
   def test_valid_nmtoken_p
+    n=0
     Testcases.each { |str,dummy,expect,|
-      assert_equal expect, valid_nmtoken?(str), str.inspect
+      n=n+1
+      assert_equal expect, valid_nmtoken?(str), "#{n}:#{str.inspect}"
     }
   end
 
   def test_valid_name_p
-    Testcases.each { |str,dummy,dummy,expect,|
-      assert_equal expect, valid_name?(str), str.inspect
+    n=0
+    Testcases.each { |str,dummy,dummy1,expect, *a|
+      n=n+1
+      assert_equal expect, valid_name?(str), "#{n}:#{str.inspect}"
     }
   end
 
@@ -90,17 +99,17 @@ class TestXMLScannerStrict < Test::Unit::TestCase
   Visitor = RecordingVisitor.new_class(XMLScan::Visitor)
 
 
-  private
+  protected
 
   def setup
-    @origkcode = $KCODE
-    $KCODE = 'U'
+    #@origkcode = $KCODE
+    #$KCODE = 'U'
     @v = Visitor.new
     @s = XMLScan::XMLScanner.new(@v, :strict_char)
   end
 
   def teardown
-    $KCODE = @origkcode
+    #$KCODE = @origkcode
   end
 
   def parse(src)

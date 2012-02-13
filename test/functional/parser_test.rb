@@ -26,11 +26,9 @@ class TestXMLParser < Test::Unit::TestCase
   def setup
     @v = Visitor.new
     @s = XMLScan::XMLParser.new(@v)
-    warn "setup #{@v.inspect}, #{@s.inspect}"
   end
 
   def parse(src)
-    warn "parse #{src.inspect}"
     @s.parse src
     @v.result
   end

@@ -177,7 +177,7 @@ module XMLScan
           unless s = last || @last and s[0] == ?< then  # for speed up
             out = [ s1 ]
             out.push get while s = last || @last and s == '>' || s.empty?
-            out.pop unless s and s[0] != ?<    # De Morgan
+            x=out.pop unless s and s[0] != ?<    # De Morgan
             concat out
           end
         end
@@ -507,7 +507,7 @@ module XMLScan
       def opt_regexp(re)
         h = {}
         RE_ENCODING_OPTIONS.each { |k,opt|
-          h[k] = Regexp.new(re, opt)
+          h[k] = Regexp.new(re.encode(RE_ENCODINGS[k]), opt)
         }
         h.default = Regexp.new(re)
         h
@@ -872,7 +872,7 @@ module XMLScan
     end
 
 
-    XMLDeclPattern = opt_regexp(%q{[ \t\n\r]([\-_\d\w]+)[ \t\n\r]*=[ \t\n\r]*('[^']*'?|"[^"]*"?)|(\?\z)|([\-_.\d\w]+|[^ \t\n\r])}) #'
+    XMLDeclPattern = opt_regexp(%q{[ \t\n\r]([\-_\d\w]+)[ \t\n\r]*=[ \t\n\r]*('[^']*'?|"[^"]*"?)|(\?\z)|([\-_.\d\w]+|[^ \t\n\r])})
 
     def scan_xmldecl(s)
       endmark = nil
@@ -881,8 +881,8 @@ module XMLScan
       on_xmldecl
       begin
         continue = false
-        s.scan(XMLDeclPattern[@optkey]) { |key,val,endmark,error|
-          info = "#{key}::#{val}::#{endmark}::#{error}"
+        STDERR << "scanning #{s.inspect}\n"
+        s.scan(XMLDeclPattern[@optkey]) { |key,val,endtok,error|
           if key then
             qmark = val.slice!(0,1)     # remove quotation marks
             if val[-1] == qmark[0] then
@@ -894,32 +894,35 @@ module XMLScan
                 endmark = true
               end
             end
-            state = case state
+            newstate = case state
                 when 0; key == 'version' ? 1 : 4
-                when 1; key == 'encoding' ? 2 : 4
+                when 1; key == 'encoding' ? 2 : key == 'standalone' ? 3 : 4
                 else    key == 'standalone' ? 3 : 4
               end
-            if state == 4
-                parse_error %w{version encoding standalone}.member?(key) ? 
-                    "#{key} declaration must not be here" :
+            state = if newstate == 4
+                known=%w{version encoding standalone}.member?(key)
+                parse_error known ?  "#{key} declaration must not be here" :
                     "unknown declaration `#{key}' in XML declaration"
-                state = 3
-              end
+                state < 2 ? 2 : 3
+              else newstate end
             on_xmldecl_key key, val
-          elsif endmark then
-            unless @src.close_tag then
-              parse_error "unexpected `#{endmark}' found in XML declaration"
-              endmark = nil
+          elsif endtok then
+            endmark = if ct=@src.close_tag
+                true
+              else
+                parse_error "unexpected `#{endmark}' found in XML declaration"
+                nil
             end
             # here always exit the loop.
           else
-            #parse_error "parse error at `#{error}'"
-            parse_error "ps error at #{info}, `#{error}'"
+            parse_error "parse error at `#{error}'"
           end
         }
+        STDERR << "em: #{endmark}, c:#{continue}\n"
       end while !endmark and continue || s = @src.get_plain
       parse_error "unterminated XML declaration meets EOF" unless s or endmark
       parse_error "no declaration found in XML declaration" if state == 0
+      STDERR << "xmldecl_end\n"
       on_xmldecl_end
     end
 

@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["UENO Katsuhiro <katsu@blue.sky.or.jp>"]
-  s.date = "2012-02-11"
+  s.date = "2012-02-13"
   s.description = "The fastest XML parser written in 100% pure Ruby."
   s.email = "gerryg@inbox.com"
   s.extra_rdoc_files = [
@@ -18,12 +18,12 @@ Gem::Specification.new do |s|
   s.files = [
     "ChangeLog",
     "Gemfile",
+    "Gemfile.lock",
     "README.rdoc",
     "Rakefile",
     "THANKS",
     "VERSION",
     "install.rb",
-    "lib/xmlscan/encoding.rb",
     "lib/xmlscan/htmlscan.rb",
     "lib/xmlscan/namespace.rb",
     "lib/xmlscan/parser.rb",
@@ -34,6 +34,7 @@ Gem::Specification.new do |s|
     "test.rb"
   ]
   s.homepage = "http://github.com/GerryG/xmlformat/"
+  s.licenses = ["MIT"]
   s.rdoc_options = ["--main", "README.rdoc", "--inline-source", "--line-numbers"]
   s.require_paths = ["lib"]
   s.rubygems_version = "1.8.15"
@@ -43,12 +44,21 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<xmlscan>, [">= 0"])
+      s.add_development_dependency(%q<rspec>, ["~> 2.8.0"])
+      s.add_development_dependency(%q<rdoc>, ["~> 3.12"])
+      s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
+      s.add_development_dependency(%q<jeweler>, ["~> 1.8.3"])
     else
-      s.add_dependency(%q<xmlscan>, [">= 0"])
+      s.add_dependency(%q<rspec>, ["~> 2.8.0"])
+      s.add_dependency(%q<rdoc>, ["~> 3.12"])
+      s.add_dependency(%q<bundler>, ["~> 1.0.0"])
+      s.add_dependency(%q<jeweler>, ["~> 1.8.3"])
     end
   else
-    s.add_dependency(%q<xmlscan>, [">= 0"])
+    s.add_dependency(%q<rspec>, ["~> 2.8.0"])
+    s.add_dependency(%q<rdoc>, ["~> 3.12"])
+    s.add_dependency(%q<bundler>, ["~> 1.0.0"])
+    s.add_dependency(%q<jeweler>, ["~> 1.8.3"])
   end
 end
 

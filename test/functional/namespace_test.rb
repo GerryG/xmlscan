@@ -20,12 +20,12 @@ class TestXMLNamespace < Test::Unit::TestCase
 
   class Visitor < RecordingVisitor.new_class(XMLScan::NSVisitor)
 
-    def on_stag_end_ns(qname, ns)
-      super qname, ns.dup
+    def on_stag_end_ns(qname, ns, *a)
+      super qname, ns.dup, *a
     end
 
-    def on_stag_end_empty_ns(qname, ns)
-      super qname, ns.dup
+    def on_stag_end_empty_ns(qname, ns, *a)
+      super qname, ns.dup, *a
     end
 
   end

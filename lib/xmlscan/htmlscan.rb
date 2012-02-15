@@ -47,7 +47,7 @@ module XMLScan
       raise "[BUG] this method must be never called"
     end
 
-    def on_stag_end_empty(name)
+    def on_stag_end_empty(name, *a)
       raise "[BUG] this method must be never called"
     end
 

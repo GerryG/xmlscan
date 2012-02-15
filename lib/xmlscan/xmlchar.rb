@@ -158,7 +158,7 @@ module XMLScan
         super
       end
 
-      def on_etag(name)
+      def on_etag(name, s=nil)
         check_valid_name name
         super
       end

@@ -122,20 +122,29 @@ module XMLScan
       self
     end
 
-
+=begin
+  Managing source in a private array.
+  * tag oriented (?< and ?> are the key tokens
+  * ?> that aren't followed by another ?< or ?> are stripped in splitting
+=end
     def get
       pop or
         unless @eof then
           last = @last
           begin
-            src = @src.gets
-            unless src then
+            unless chunk = @src.gets then
               @eof = true
-              unshift last
-              last = nil
-              break
+              @last = nil
+              return last
+              #unshift last # to be popped after reverse!
+              #last = nil
+              #break
             end
-            a = src.split(/(?=<|>[<>])|>/, -1)
+            # negative lookahead: < or >< or >>
+            # so don't consume those (but split leaving them always at the
+            # end of chunks)
+            # consume (>) and split on >
+            a = chunk.split(/(?=<|>[<>])|>/, -1)
             if last then
               unless /\A[<>]/ =~ a.first then
                 a[0] = last << (a.first || '')
@@ -143,6 +152,7 @@ module XMLScan
                 push last
               end
             end
+            raise "size #{size}" if size > 1
             concat a
             last = pop
           end while empty?
@@ -223,7 +233,7 @@ module XMLScan
         last.push @last.inspect
       end
       a.push '#eof' if @eof
-      "((#{a.join(' ')}) (#{last.join(' ')}) . #{source.inspect})"
+      "((#{a*' '}) l(#{last*' '}) . #{source.inspect})"
     end
 
     def each
@@ -354,72 +364,72 @@ module XMLScan
       end
     end
 
-    def on_xmldecl_version(str)
-      @visitor.on_xmldecl_version str
+    def on_xmldecl_version(str, *a)
+      @visitor.on_xmldecl_version str, *a
     end
 
-    def on_xmldecl_encoding(str)
-      @visitor.on_xmldecl_encoding str
+    def on_xmldecl_encoding(str, *a)
+      @visitor.on_xmldecl_encoding str, *a
     end
 
-    def on_xmldecl_standalone(str)
-      @visitor.on_xmldecl_standalone str
+    def on_xmldecl_standalone(str, *a)
+      @visitor.on_xmldecl_standalone str, *a
     end
 
-    def on_xmldecl_other(name, value)
-      @visitor.on_xmldecl_other name, value
+    def on_xmldecl_other(name, value, *a)
+      @visitor.on_xmldecl_other name, value, *a
     end
 
-    def on_xmldecl_end
-      @visitor.on_xmldecl_end
+    def on_xmldecl_end(*a)
+      @visitor.on_xmldecl_end *a
     end
 
-    def on_doctype(root, pubid, sysid)
-      @visitor.on_doctype root, pubid, sysid
+    def on_doctype(root, pubid, sysid, *a)
+      @visitor.on_doctype root, pubid, sysid, *a
     end
 
-    def on_prolog_space(str)
-      @visitor.on_prolog_space str
+    def on_prolog_space(str, *a)
+      @visitor.on_prolog_space str, *a
     end
 
-    def on_comment(str)
-      @visitor.on_comment str
+    def on_comment(str, *a)
+      @visitor.on_comment str, *a
     end
 
-    def on_pi(target, pi)
-      @visitor.on_pi target, pi
+    def on_pi(target, pi, *a)
+      @visitor.on_pi target, pi, *a
     end
 
-    def on_chardata(str)
-      @visitor.on_chardata str
+    def on_chardata(str, *a)
+      @visitor.on_chardata str, *a
     end
 
-    def on_cdata(str)
-      @visitor.on_cdata str
+    def on_cdata(str, *a)
+      @visitor.on_cdata str, *a
     end
 
-    def on_etag(name)
-      @visitor.on_etag name
+    def on_etag(name, *a)
+      @visitor.on_etag name, *a
     end
 
-    def on_entityref(ref)
-      @visitor.on_entityref ref
+    def on_entityref(ref, *a)
+      @visitor.on_entityref ref, *a
     end
 
-    def on_charref(code)
-      @visitor.on_charref code
+    def on_charref(code, *a)
+      @visitor.on_charref code, *a
     end
 
-    def on_charref_hex(code)
-      @visitor.on_charref_hex code
+    def on_charref_hex(code, *a)
+      @visitor.on_charref_hex code, *a
     end
 
-    def on_start_document
-      @visitor.on_start_document
+    def on_start_document(*a)
+      @visitor.on_start_document *a
     end
 
-    def on_end_document
-      @visitor.on_end_document
+    def on_end_document(*a)
+      @visitor.on_end_document *a
     end
 
 
@@ -444,50 +454,51 @@ module XMLScan
     #
     #    A: on_chardata          ('HOGE')
 
-    def on_stag(name)
-      @visitor.on_stag name
+    def on_stag(name, *a)
+      @visitor.on_stag name, *a
     end
 
-    def on_attribute(name)
-      @visitor.on_attribute name
+    def on_attribute(name, *a)
+      @visitor.on_attribute name, *a
     end
 
-    def on_attr_value(str)
-      @visitor.on_attr_value str
+    def on_attr_value(str, *a)
+      @visitor.on_attr_value str, *a
     end
 
-    def on_attr_entityref(ref)
-      @visitor.on_attr_entityref ref
+    def on_attr_entityref(ref, *a)
+      @visitor.on_attr_entityref ref, *a
     end
 
-    def on_attr_charref(code)
-      @visitor.on_attr_charref code
+    def on_attr_charref(code, *a)
+      @visitor.on_attr_charref code, *a
     end
 
-    def on_attr_charref_hex(code)
-      @visitor.on_attr_charref_hex code
+    def on_attr_charref_hex(code, *a)
+      @visitor.on_attr_charref_hex code, *a
     end
 
-    def on_attribute_end(name)
-      @visitor.on_attribute_end name
+    def on_attribute_end(name, *a)
+      @visitor.on_attribute_end name, *a, *a
     end
 
-    def on_stag_end_empty(name)
-      @visitor.on_stag_end_empty name
+    def on_stag_end_empty(name, *a)
+      @visitor.on_stag_end_empty name, *a
     end
 
-    def on_stag_end(name)
-      @visitor.on_stag_end name
+    def on_stag_end(name, *a)
+      STDERR << "ose #{name}, #{a.inspect}\n"
+      @visitor.on_stag_end name, *a
     end
 
 
+    S_OPT_EXAMPLE = "".encode(::Encoding::WINDOWS_31J)
+    E_OPT_EXAMPLE = "".encode(::Encoding::EUCJP)
 
     private
 
     module OptRegexp
       UTFSTR = "é"
-      S_OPT_EXAMPLE = "".encode Encoding.find('Windows-31J')
-      E_OPT_EXAMPLE = "".encode Encoding.find('EUC-JP')
 
       RE_ENCODINGS = {
         :n=>/e/n.encoding,
@@ -521,10 +532,11 @@ module XMLScan
     def scan_chardata(s)
       while true
         unless /&/ =~ s then
-          on_chardata s
+          on_chardata s, s
         else
           s = $`
-          on_chardata s unless s.empty?
+          on_chardata s, s unless s.empty?
+          orig = $'
           ref = nil
           $'.split('&', -1).each { |s|
             unless /(?!\A);|(?=[ \t\r\n])/ =~ s and not $&.empty? then
@@ -533,22 +545,22 @@ module XMLScan
                 parse_error "reference to `#{ref}' doesn't end with `;'"
               else
                 parse_error "`&' is not used for entity/character references"
-                on_chardata('&' << s)
+                on_chardata('&' << s, '&'<< s)
                 next
               end
             end
             ref = $`
             s = $'
             if /\A[^#]/ =~ ref then
-              on_entityref ref
+              on_entityref ref, orig
             elsif /\A#(\d+)\z/ =~ ref then
-              on_charref $1.to_i
+              on_charref $1.to_i, orig
             elsif /\A#x([\dA-Fa-f]+)\z/ =~ ref then
-              on_charref_hex $1.hex
+              on_charref_hex $1.hex, orig
             else
               parse_error "invalid character reference `#{ref}'"
             end
-            on_chardata s unless s.empty?
+            on_chardata s, s unless s.empty?
           }
         end
         s = @src.get_text
@@ -631,7 +643,7 @@ module XMLScan
       unless /\A<\?([^ \t\n\r?]+)(?:[ \t\n\r]+|(?=\?\z))/ =~ s then
         parse_error "parse error at `<?'"
         s << '>' if @src.close_tag
-        on_chardata s
+        on_chardata s, s
       else
         target = $1
         pi = $'
@@ -677,11 +689,12 @@ module XMLScan
 
     def found_empty_etag
       parse_error "parse error at `</'"
-      on_chardata '</>'
+      on_chardata '</>', s
     end
 
 
     def scan_etag(s)
+      orig="#{s}>"
       s[0,2] = ''  # remove '</'
       if s.empty? then
         if @src.close_tag then   # </>
@@ -689,14 +702,14 @@ module XMLScan
         else                     # </< or </[EOF]
           parse_error "parse error at `</'"
           s << '>' if @src.close_tag
-          return on_chardata('</' << s)
+          return on_chardata('</' << s, '</' << s)
         end
       elsif /[ \t\n\r]+/ =~ s then
         s1, s2 = $`, $'
         if s1.empty? then                # </ tag
           parse_error "parse error at `</'"
           s << '>' if @src.close_tag
-          return on_chardata('</' + s)
+          return on_chardata('</' + s, '</' + s)
         elsif not s2.empty? then         # </ta g
           parse_error "illegal whitespace is found within end tag `#{s1}'"
           while @src.get_tag
@@ -705,13 +718,13 @@ module XMLScan
         s = s1
       end
       found_unclosed_etag s unless @src.close_tag   # </tag< or </tag[EOF]
-      on_etag s
+      on_etag s, orig
     end
 
 
     def found_empty_stag
       parse_error "parse error at `<'"
-      on_chardata '<>'
+      on_chardata '<>', '<>'
     end
 
     def found_unclosed_stag(name)
@@ -745,6 +758,7 @@ module XMLScan
 
 
     def scan_stag(s)
+      hash = {}
       unless /(?=[\/ \t\n\r='"])/ =~ s then
         name = s
         name[0,1] = ''        # remove `<'
@@ -753,30 +767,31 @@ module XMLScan
             return found_empty_stag
           else                     # << or <[EOF]
             parse_error "parse error at `<'"
-            return on_chardata('<')
+            return on_chardata('<', '<')
           end
         end
         on_stag name
         found_unclosed_stag name unless @src.close_tag
-        on_stag_end name
+        on_stag_end name, "<#{s}>", {}
       else
+        k = nil
         name = $`
         s = $'
         name[0,1] = ''        # remove `<'
         if name.empty? then   # `< tag' or `<=`
           parse_error "parse error at `<'"
           s << '>' if @src.close_tag
-          return on_chardata('<' << s)
+          return on_chardata('<' << s, '<' << s)
         end
         on_stag name
         emptyelem = false
-        key,val,error,qmark,c = nil
         begin
           continue = false
           s.scan(/[ \t\n\r]([^= \t\n\r\/'"]+)[ \t\n\r]*=[ \t\n\r]*('[^']*'?|"[^"]*"?)|\/\z|([^ \t\n\r][\S\s]*)/
                  ) { |key,val,error|
-            if key then                # key="value"
+            if key then
               on_attribute key
+              k=key
               qmark = val.slice!(0,1)
               if val[-1] == qmark[0] then
                 val.chop!
@@ -800,6 +815,8 @@ module XMLScan
                 end until s
                 continue = s      # if eof then continue is false, else true.
               end
+              hash[k.to_sym] = val
+              STDERR << "attr end #{hash.inspect}, #{k}, #{val}\n"
               on_attribute_end key
             elsif error then
               continue = s = found_stag_error(error)
@@ -816,9 +833,10 @@ module XMLScan
           end
         end
         if emptyelem then
-          on_stag_end_empty name
+          on_stag_end_empty name, "<#{name}#{s}>", hash
         else
-          on_stag_end name
+          STDERR << "on stag end #{ name}, \"<#{name}#{s}>\", #{hash.inspect}\n"
+          on_stag_end name, "<#{name}#{s}>", hash
         end
       end
     end
@@ -827,7 +845,7 @@ module XMLScan
     def scan_bang_tag(s)
       parse_error "parse error at `<!'"
       s << '>' if @src.close_tag
-      on_chardata s
+      on_chardata s, s
     end
 
 
@@ -1067,10 +1085,10 @@ module XMLScan
 
 
     def scan_document
-      on_start_document
+      on_start_document ''
       @src.prepare
       scan_prolog @src.get
-      on_end_document
+      on_end_document ''
     end
 
 

@@ -684,10 +684,10 @@ class TestHTMLScannerCDATA < Test::Unit::TestCase
     def make_scanner
       @scanner = XMLScan::HTMLScanner.new(self)
     end
-    def on_stag_end(name)
+    def on_stag_end(name, *a)
       super
       s = @scanner.get_cdata_content
-      @result.push [ :cdata_content, s ]
+      @result.push [ :cdata_content, *a ]
     end
   end
 

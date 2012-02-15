@@ -45,7 +45,7 @@ module DefTestCase
   private
 
   def do_testcase(src, *expected)
-    expected = [ [:on_start_document] ] + expected + [ [:on_end_document] ]
+    expected = [ [:on_start_document, ''] ] + expected + [ [:on_end_document, ''] ]
     result = parse(src)
     begin
       assert_equal expected, result

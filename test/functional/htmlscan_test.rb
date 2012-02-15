@@ -712,37 +712,37 @@ class TestHTMLScannerCDATA < Test::Unit::TestCase
   '<hoge>fuga</hoge>'
   [ :on_stag, 'hoge' ]
   [ :on_stag_end, 'hoge' ]
-  [ :cdata_content, 'fuga' ]
-  [ :on_etag, 'hoge' ]
+  [ :cdata_content, 'fuga', 'fuga' ]
+  [ :on_etag, 'hoge', '</hoge>' ]
 
   '<hoge>fuga<foo><bar>fuga</hoge>'
   [ :on_stag, 'hoge' ]
   [ :on_stag_end, 'hoge' ]
-  [ :cdata_content, 'fuga<foo><bar>fuga' ]
-  [ :on_etag, 'hoge' ]
+  [ :cdata_content, 'fuga<foo><bar>fuga', 'fuga<foo><bar>fuga' ]
+  [ :on_etag, 'hoge', '</hoge>' ]
 
   '<hoge>><><><<><a><>><></hoge>'
   [ :on_stag, 'hoge' ]
   [ :on_stag_end, 'hoge' ]
-  [ :cdata_content, '><><><<><a><>><>' ]
-  [ :on_etag, 'hoge' ]
+  [ :cdata_content, '><><><<><a><>><>', '><><><<><a><>><>' ]
+  [ :on_etag, 'hoge', '</hoge>' ]
 
   '<hoge>fuga</'
   [ :on_stag, 'hoge' ]
   [ :on_stag_end, 'hoge' ]
-  [ :cdata_content, 'fuga' ]
+  [ :cdata_content, 'fuga', 'fuga</' ]
   [ :parse_error, "parse error at `</'" ]
   [ :on_chardata, '</' ]
 
   '<hoge>fuga<'
   [ :on_stag, 'hoge' ]
-  [ :on_stag_end, 'hoge' ]
-  [ :cdata_content, 'fuga<' ]
+  [ :on_stag_end, 'hoge', '<hoge>' ]
+  [ :cdata_content, 'fuga<', 'fuga<' ]
 
   '<hoge>fuga>'
   [ :on_stag, 'hoge' ]
-  [ :on_stag_end, 'hoge' ]
-  [ :cdata_content, 'fuga>' ]
+  [ :on_stag_end, 'hoge', '<hoge>' ]
+  [ :cdata_content, 'fuga>', 'fuga>' ]
 
   TESTCASEEND
 

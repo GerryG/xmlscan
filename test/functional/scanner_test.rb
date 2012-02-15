@@ -488,16 +488,16 @@ class TestXMLScanner < Test::Unit::TestCase
   deftestcase 'etag', <<-'TESTCASEEND'
 
   '</hoge>'
-  [ :on_etag, 'hoge' ]
+  [ :on_etag, 'hoge', '</hoge>' ]
 
   '</hoge   >'
-  [ :on_etag, 'hoge' ]
+  [ :on_etag, 'hoge', '</hoge   >' ]
 
   "</hoge\r>"
-  [ :on_etag, 'hoge' ]
+  [ :on_etag, 'hoge', "</hoge\r>" ]
 
   "</hoge\f>"
-  [ :on_etag, "hoge\f" ]
+  [ :on_etag, "hoge\f", "</hoge\f>" ]
 
   '</ hoge>'
   [ :parse_error, "parse error at `</'" ]
@@ -505,16 +505,16 @@ class TestXMLScanner < Test::Unit::TestCase
 
   '</hoge fuga>'
   [ :parse_error, "illegal whitespace is found within end tag `hoge'" ]
-  [ :on_etag, 'hoge' ]
+  [ :on_etag, 'hoge', '</hoge fuga>' ]
 
   '</hoge'
   [ :parse_error, "unclosed end tag `hoge' meets EOF" ]
-  [ :on_etag, 'hoge' ]
+  [ :on_etag, 'hoge', '</hoge' ]
 
   '</hoge</fuga>'
   [ :parse_error, "unclosed end tag `hoge' meets another tag" ]
-  [ :on_etag, 'hoge' ]
-  [ :on_etag, 'fuga' ]
+  [ :on_etag, 'hoge', '</hoge' ]
+  [ :on_etag, 'fuga', '</fuga>' ]
 
   '</>'
   [ :parse_error, "parse error at `</'" ]
@@ -535,24 +535,24 @@ class TestXMLScanner < Test::Unit::TestCase
   [ :on_chardata, 'fuga' ]
 
   '</hoge>>'
-  [ :on_etag, 'hoge' ]
+  [ :on_etag, 'hoge', '</hoge>' ]
   [ :on_chardata, '>' ]
 
   '</hoge fuga>hoge'
   [ :parse_error, "illegal whitespace is found within end tag `hoge'" ]
-  [ :on_etag, 'hoge' ]
+  [ :on_etag, 'hoge', '</hoge fuga>' ]
   [ :on_chardata, 'hoge' ]
 
   '</hoge</fuga>hoge'
   [ :parse_error, "unclosed end tag `hoge' meets another tag" ]
-  [ :on_etag, 'hoge' ]
-  [ :on_etag, 'fuga' ]
+  [ :on_etag, 'hoge', '</hoge' ]
+  [ :on_etag, 'fuga', '</fuga>' ]
   [ :on_chardata, 'hoge' ]
 
   '</hoge</fuga>>'
   [ :parse_error, "unclosed end tag `hoge' meets another tag" ]
-  [ :on_etag, 'hoge' ]
-  [ :on_etag, 'fuga' ]
+  [ :on_etag, 'hoge', '</hoge' ]
+  [ :on_etag, 'fuga', '</fuga>' ]
   [ :on_chardata, '>' ]
 
   '</>hoge'
@@ -568,38 +568,38 @@ class TestXMLScanner < Test::Unit::TestCase
 
   '<hoge>'
   [ :on_stag, 'hoge' ]
-  [ :on_stag_end, 'hoge' ]
+  [ :on_stag_end, 'hoge', '<hoge>' ]
 
   '<hoge     >'
   [ :on_stag, 'hoge' ]
-  [ :on_stag_end, 'hoge' ]
+  [ :on_stag_end, 'hoge', '<hoge     >' ]
 
   "<hoge\r     >"
-  [ :on_stag, 'hoge' ]
+  [ :on_stag, 'hoge', "<hoge\r     >" ]
   [ :on_stag_end, 'hoge' ]
 
   "<hoge\f     >"
   [ :on_stag, "hoge\f" ]
-  [ :on_stag_end, "hoge\f" ]
+  [ :on_stag_end, "hoge\f", "<hoge\f     >" ]
 
   '<hoge'
   [ :on_stag, 'hoge' ]
   [ :parse_error, "unclosed start tag `hoge' meets EOF" ]
-  [ :on_stag_end, 'hoge' ]
+  [ :on_stag_end, 'hoge', '<hoge' ]
 
   '<hoge<fuga>'
   [ :on_stag, 'hoge' ]
   [ :parse_error, "unclosed start tag `hoge' meets another tag" ]
-  [ :on_stag_end, 'hoge' ]
+  [ :on_stag_end, 'hoge', '<hoge' ]
   [ :on_stag, 'fuga' ]
-  [ :on_stag_end, 'fuga' ]
+  [ :on_stag_end, 'fuga', '<fuga>' ]
 
   '<hoge   <fuga>'
   [ :on_stag, 'hoge' ]
   [ :parse_error, "unclosed start tag `hoge' meets another tag" ]
-  [ :on_stag_end, 'hoge' ]
+  [ :on_stag_end, 'hoge', '<hoge   ' ]
   [ :on_stag, 'fuga' ]
-  [ :on_stag_end, 'fuga' ]
+  [ :on_stag_end, 'fuga', '<fuga>' ]
 
   '<  hoge>'
   [ :parse_error, "parse error at `<'" ]
@@ -607,30 +607,30 @@ class TestXMLScanner < Test::Unit::TestCase
 
   '<hoge/>'
   [ :on_stag, 'hoge' ]
-  [ :on_stag_end_empty, 'hoge' ]
+  [ :on_stag_end_empty, 'hoge', '<hoge/>' ]
 
   '<hoge     />'
   [ :on_stag, 'hoge' ]
-  [ :on_stag_end_empty, 'hoge' ]
+  [ :on_stag_end_empty, 'hoge', '<hoge     />' ]
 
   '<hoge/'
   [ :on_stag, 'hoge' ]
   [ :parse_error, "unclosed empty element tag `hoge' meets EOF" ]
-  [ :on_stag_end_empty, 'hoge' ]
+  [ :on_stag_end_empty, 'hoge', '<hoge/' ]
 
   '<hoge/<fuga/>'
   [ :on_stag, 'hoge' ]
   [ :parse_error, "unclosed empty element tag `hoge' meets another tag" ]
-  [ :on_stag_end_empty, 'hoge' ]
+  [ :on_stag_end_empty, 'hoge', '<hoge/' ]
   [ :on_stag, 'fuga' ]
-  [ :on_stag_end_empty, 'fuga' ]
+  [ :on_stag_end_empty, 'fuga', '<fuga/>' ]
 
   '<hoge  /<fuga>'
   [ :on_stag, 'hoge' ]
   [ :parse_error, "unclosed empty element tag `hoge' meets another tag" ]
-  [ :on_stag_end_empty, 'hoge' ]
+  [ :on_stag_end_empty, 'hoge', '<hoge  /', {} ]
   [ :on_stag, 'fuga' ]
-  [ :on_stag_end, 'fuga' ]
+  [ :on_stag_end, 'fuga', '<fuga>' ]
 
   '<  hoge  />'
   [ :parse_error, "parse error at `<'" ]
@@ -639,12 +639,12 @@ class TestXMLScanner < Test::Unit::TestCase
   '<hoge/ >'
   [ :on_stag, 'hoge' ]
   [ :parse_error, "parse error at `/'" ]
-  [ :on_stag_end, 'hoge' ]
+  [ :on_stag_end, 'hoge', '<hoge/ >' ]
 
   '<hoge= >'
   [ :on_stag, 'hoge' ]
   [ :parse_error, "parse error at `='" ]
-  [ :on_stag_end, 'hoge' ]
+  [ :on_stag_end, 'hoge', '<hoge= >' ]
 
   '<=hoge >'
   [ :parse_error, "parse error at `<'" ]
@@ -656,22 +656,22 @@ class TestXMLScanner < Test::Unit::TestCase
 
   '<hoge>fuga'
   [ :on_stag, 'hoge' ]
-  [ :on_stag_end, 'hoge' ]
+  [ :on_stag_end, 'hoge', '<hoge>' ]
   [ :on_chardata, 'fuga' ]
 
   '<hoge>>'
   [ :on_stag, 'hoge' ]
-  [ :on_stag_end, 'hoge' ]
+  [ :on_stag_end, 'hoge', '<hoge>>' ]
   [ :on_chardata, '>' ]
 
   '<hoge/>fuga'
   [ :on_stag, 'hoge' ]
-  [ :on_stag_end_empty, 'hoge' ]
+  [ :on_stag_end_empty, 'hoge', '<hoge/>' ]
   [ :on_chardata, 'fuga' ]
 
   '<hoge/>>'
   [ :on_stag, 'hoge' ]
-  [ :on_stag_end_empty, 'hoge' ]
+  [ :on_stag_end_empty, 'hoge', '<hoge/>' ]
   [ :on_chardata, '>' ]
 
   '< hoge>fuga'
@@ -687,13 +687,13 @@ class TestXMLScanner < Test::Unit::TestCase
   '<hoge/ >fuga'
   [ :on_stag, 'hoge' ]
   [ :parse_error, "parse error at `/'" ]
-  [ :on_stag_end, 'hoge' ]
+  [ :on_stag_end, 'hoge', '<hoge/ >' ]
   [ :on_chardata, 'fuga' ]
 
   '<hoge/ >>'
   [ :on_stag, 'hoge' ]
   [ :parse_error, "parse error at `/'" ]
-  [ :on_stag_end, 'hoge' ]
+  [ :on_stag_end, 'hoge', '<hoge/ >' ]
   [ :on_chardata, '>' ]
 
   '<>'
@@ -716,13 +716,13 @@ class TestXMLScanner < Test::Unit::TestCase
   [ :on_attribute, 'foo' ]
   [ :on_attr_value, 'bar' ]
   [ :on_attribute_end, 'foo' ]
-  [ :on_stag_end, 'hoge' ]
+  [ :on_stag_end, 'hoge', "<hoge foo=\"bar\">", {"foo"=>"bar"} ]
 
   '<hoge foo="">'
   [ :on_stag, 'hoge' ]
   [ :on_attribute, 'foo' ]
   [ :on_attribute_end, 'foo' ]
-  [ :on_stag_end, 'hoge' ]
+  [ :on_stag_end, 'hoge', '<hoge foo="">', {'foo'=>''} ]
 
   "<hoge foo =  'bar' HOGE = 'FUGA'  >"
   [ :on_stag, 'hoge' ]
@@ -732,28 +732,28 @@ class TestXMLScanner < Test::Unit::TestCase
   [ :on_attribute, 'HOGE' ]
   [ :on_attr_value, 'FUGA' ]
   [ :on_attribute_end, 'HOGE' ]
-  [ :on_stag_end, 'hoge' ]
+  [ :on_stag_end, 'hoge', "<hoge foo =  'bar' HOGE = 'FUGA'  >", {'foo'=>'bar', 'HOGE'=>'FUGA'} ]
 
   '<hoge foo="bar"/>'
   [ :on_stag, 'hoge' ]
   [ :on_attribute, 'foo' ]
   [ :on_attr_value, 'bar' ]
   [ :on_attribute_end, 'foo' ]
-  [ :on_stag_end_empty, 'hoge' ]
+  [ :on_stag_end_empty, 'hoge', '<hoge foo="bar"/>', {'foo'=>'bar'} ]
 
   "<hoge foo   =   '  bar  '     />"
   [ :on_stag, 'hoge' ]
   [ :on_attribute, 'foo' ]
   [ :on_attr_value, '  bar  ' ]
   [ :on_attribute_end, 'foo' ]
-  [ :on_stag_end_empty, 'hoge' ]
+  [ :on_stag_end_empty, 'hoge', "<hoge foo   =   '  bar  '     />", {'foo'=>'  bar  '} ]
 
   "<hoge foo\r=\r'bar'/>"
   [ :on_stag, 'hoge' ]
   [ :on_attribute, 'foo' ]
   [ :on_attr_value, 'bar' ]
   [ :on_attribute_end, 'foo' ]
-  [ :on_stag_end_empty, 'hoge' ]
+  [ :on_stag_end_empty, 'hoge', "<hoge foo\r=\r'bar'/>", {"foo"=>"bar"} ]
 
   "<hoge foo\f=\f'bar'/>"
   [ :on_stag, 'hoge' ]
@@ -763,7 +763,7 @@ class TestXMLScanner < Test::Unit::TestCase
   [ :parse_error, "parse error at `''" ]
   [ :parse_error, "parse error at `bar'" ]
   [ :parse_error, "parse error at `''" ]
-  [ :on_stag_end_empty, 'hoge' ]
+  [ :on_stag_end_empty, 'hoge', "<hoge foo\f=\f'bar'/>", {} ]
 
   "<hoge\ffoo='bar'/>"
   [ :on_stag, "hoge\ffoo" ]
@@ -771,7 +771,7 @@ class TestXMLScanner < Test::Unit::TestCase
   [ :parse_error, "parse error at `''" ]
   [ :parse_error, "parse error at `bar'" ]
   [ :parse_error, "parse error at `''" ]
-  [ :on_stag_end_empty, "hoge\ffoo" ]
+  [ :on_stag_end_empty, "hoge\ffoo", "<hoge\ffoo='bar'/>", {} ]
 
   '<hoge foo="bar" / >'
   [ :on_stag, 'hoge' ]
@@ -779,7 +779,7 @@ class TestXMLScanner < Test::Unit::TestCase
   [ :on_attr_value, 'bar' ]
   [ :on_attribute_end, 'foo' ]
   [ :parse_error, "parse error at `/'" ]
-  [ :on_stag_end, 'hoge' ]
+  [ :on_stag_end, 'hoge', '<hoge foo="bar" / >', {'foo'=>'bar'} ]
 
   '<hoge foo="b>a>b>c>ar">'
   [ :on_stag, 'hoge' ]
@@ -794,7 +794,7 @@ class TestXMLScanner < Test::Unit::TestCase
   [ :on_attr_value, '>' ]
   [ :on_attr_value, 'ar' ]
   [ :on_attribute_end, 'foo' ]
-  [ :on_stag_end, 'hoge' ]
+  [ :on_stag_end, 'hoge', '<hoge foo="b>a>b>c>ar">', {"foo"=>"b>a>b>c>ar", "HOGE"=>"FUGA"} ]
 
   '<hoge foo="b>>a>>b>>c>>ar" HOGE="FUGA">'
   [ :on_stag, 'hoge' ]
@@ -816,7 +816,7 @@ class TestXMLScanner < Test::Unit::TestCase
   [ :on_attribute, 'HOGE' ]
   [ :on_attr_value, 'FUGA' ]
   [ :on_attribute_end, 'HOGE' ]
-  [ :on_stag_end, 'hoge' ]
+  [ :on_stag_end, 'hoge', '<hoge foo="b>>a>>b>>c>>ar" HOGE="FUGA">', {"foo"=>"b>>a>>b>>c>>ar", "HOGE"=>"FUGA"} ]
 
   '<hoge foo="b<a>b<c>ar">'
   [ :on_stag, 'hoge' ]
@@ -831,7 +831,7 @@ class TestXMLScanner < Test::Unit::TestCase
   [ :on_attr_value, '>' ]
   [ :on_attr_value, 'ar' ]
   [ :on_attribute_end, 'foo' ]
-  [ :on_stag_end, 'hoge' ]
+  [ :on_stag_end, 'hoge', '<hoge foo="b<a>b<c>ar">', {'foo'=>'b<a>b<c>ar'} ]
 
   '<hoge foo="bar"<fuga>'
   [ :on_stag, 'hoge' ]
@@ -839,9 +839,9 @@ class TestXMLScanner < Test::Unit::TestCase
   [ :on_attr_value, 'bar' ]
   [ :on_attribute_end, 'foo' ]
   [ :parse_error, "unclosed start tag `hoge' meets another tag" ]
-  [ :on_stag_end, 'hoge' ]
+  [ :on_stag_end, 'hoge', '<hage foo="bar"', {'foo'=>'bar'} ]
   [ :on_stag, 'fuga' ]
-  [ :on_stag_end, 'fuga' ]
+  [ :on_stag_end, 'fuga', "<fuga>", {} ]
 
   '<hoge foo="bar"'
   [ :on_stag, 'hoge' ]
@@ -849,28 +849,28 @@ class TestXMLScanner < Test::Unit::TestCase
   [ :on_attr_value, 'bar' ]
   [ :on_attribute_end, 'foo' ]
   [ :parse_error, "unclosed start tag `hoge' meets EOF" ]
-  [ :on_stag_end, 'hoge' ]
+  [ :on_stag_end, 'hoge', '<hoge foo="bar"', {'foo'=>'bar'} ]
 
   '<hoge foo=bar>'
   [ :on_stag, 'hoge' ]
   [ :parse_error, "parse error at `foo'" ]
   [ :parse_error, "parse error at `='" ]
   [ :parse_error, "parse error at `bar'" ]
-  [ :on_stag_end, 'hoge' ]
+  [ :on_stag_end, 'hoge', '<hoge foo=bar', {'foo'=>'bar'} ]
 
   '<hoge   foo   =   bar   >'
   [ :on_stag, 'hoge' ]
   [ :parse_error, "parse error at `foo'" ]
   [ :parse_error, "parse error at `='" ]
   [ :parse_error, "parse error at `bar'" ]
-  [ :on_stag_end, 'hoge' ]
+  [ :on_stag_end, 'hoge', '<hoge   foo   =   bar   >', {'foo'=>'bar'} ]
 
   '<hoge   foo   =   bar&fuga;bar   >'
   [ :on_stag, 'hoge' ]
   [ :parse_error, "parse error at `foo'" ]
   [ :parse_error, "parse error at `='" ]
   [ :parse_error, "parse error at `bar&fuga;bar'" ]
-  [ :on_stag_end, 'hoge' ]
+  [ :on_stag_end, 'hoge', '<hoge   foo   =   bar&fuga;bar   >', {} ]
 
   '<hoge   foo   =   bar<fuga   >'
   [ :on_stag, 'hoge' ]

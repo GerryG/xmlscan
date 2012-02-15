@@ -38,8 +38,8 @@ module MyVisitor
       if name.to_sym == :card
         STDERR << "sTag: #{a.inspect}\n" #{caller*"\n"}\n"
         @stack.push([s, @out])
-        @context = h[:name] if h
-        @out << [h[:transclude] || "{{#{@context}}}"]
+        @context = h['name'] if h
+        @out << [h['transclude'] || "{{#{@context}}}"]
       else @out << s end
     end
     def on_stag_empty_end(name, s=nil, h={}, *a)

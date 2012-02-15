@@ -487,7 +487,7 @@ module XMLScan
     end
 
     def on_stag_end(name, *a)
-      STDERR << "ose #{name}, #{a.inspect}\n"
+      #STDERR << "ose #{name}, #{a.inspect}\n"
       @visitor.on_stag_end name, *a
     end
 
@@ -532,10 +532,10 @@ module XMLScan
     def scan_chardata(s)
       while true
         unless /&/ =~ s then
-          on_chardata s, s
+          on_chardata s
         else
           s = $`
-          on_chardata s, s unless s.empty?
+          on_chardata s unless s.empty?
           orig = $'
           ref = nil
           $'.split('&', -1).each { |s|
@@ -545,22 +545,22 @@ module XMLScan
                 parse_error "reference to `#{ref}' doesn't end with `;'"
               else
                 parse_error "`&' is not used for entity/character references"
-                on_chardata('&' << s, '&'<< s)
+                on_chardata '&'+s
                 next
               end
             end
             ref = $`
             s = $'
             if /\A[^#]/ =~ ref then
-              on_entityref ref, orig
+              on_entityref ref, '&'+orig
             elsif /\A#(\d+)\z/ =~ ref then
-              on_charref $1.to_i, orig
+              on_charref $1.to_i, '&'+orig
             elsif /\A#x([\dA-Fa-f]+)\z/ =~ ref then
-              on_charref_hex $1.hex, orig
+              on_charref_hex $1.hex, '&'+orig
             else
               parse_error "invalid character reference `#{ref}'"
             end
-            on_chardata s, s unless s.empty?
+            on_chardata s unless s.empty?
           }
         end
         s = @src.get_text
@@ -570,8 +570,9 @@ module XMLScan
     end
 
 
-    def scan_attvalue(s)     # almostly copy & paste from scan_chardata
+    def scan_attr_value(s)     # almostly copy & paste from scan_chardata
       unless /&/ =~ s then
+        #STDERR << "no& attr_val #{s.inspect}, #{caller*"\n"}\n" if s == ?>
         on_attr_value s
       else
         s = $`
@@ -643,7 +644,7 @@ module XMLScan
       unless /\A<\?([^ \t\n\r?]+)(?:[ \t\n\r]+|(?=\?\z))/ =~ s then
         parse_error "parse error at `<?'"
         s << '>' if @src.close_tag
-        on_chardata s, s
+        on_chardata s
       else
         target = $1
         pi = $'
@@ -689,7 +690,7 @@ module XMLScan
 
     def found_empty_etag
       parse_error "parse error at `</'"
-      on_chardata '</>', s
+      on_chardata '</>'
     end
 
 
@@ -702,14 +703,14 @@ module XMLScan
         else                     # </< or </[EOF]
           parse_error "parse error at `</'"
           s << '>' if @src.close_tag
-          return on_chardata('</' << s, '</' << s)
+          return on_chardata '</' << s
         end
       elsif /[ \t\n\r]+/ =~ s then
         s1, s2 = $`, $'
         if s1.empty? then                # </ tag
           parse_error "parse error at `</'"
           s << '>' if @src.close_tag
-          return on_chardata('</' + s, '</' + s)
+          return on_chardata '</' + s
         elsif not s2.empty? then         # </ta g
           parse_error "illegal whitespace is found within end tag `#{s1}'"
           while @src.get_tag
@@ -724,7 +725,7 @@ module XMLScan
 
     def found_empty_stag
       parse_error "parse error at `<'"
-      on_chardata '<>', '<>'
+      on_chardata '<>'
     end
 
     def found_unclosed_stag(name)
@@ -759,6 +760,7 @@ module XMLScan
 
     def scan_stag(s)
       hash = {}
+      orig = [s.dup] 
       unless /(?=[\/ \t\n\r='"])/ =~ s then
         name = s
         name[0,1] = ''        # remove `<'
@@ -767,12 +769,12 @@ module XMLScan
             return found_empty_stag
           else                     # << or <[EOF]
             parse_error "parse error at `<'"
-            return on_chardata('<', '<')
+            return on_chardata '<'
           end
         end
         on_stag name
         found_unclosed_stag name unless @src.close_tag
-        on_stag_end name, "<#{s}>", {}
+        on_stag_end name, orig*''+?>, {}
       else
         k = nil
         name = $`
@@ -781,7 +783,7 @@ module XMLScan
         if name.empty? then   # `< tag' or `<=`
           parse_error "parse error at `<'"
           s << '>' if @src.close_tag
-          return on_chardata('<' << s, '<' << s)
+          return on_chardata '<' << s
         end
         on_stag name
         emptyelem = false
@@ -789,35 +791,42 @@ module XMLScan
           continue = false
           s.scan(/[ \t\n\r]([^= \t\n\r\/'"]+)[ \t\n\r]*=[ \t\n\r]*('[^']*'?|"[^"]*"?)|\/\z|([^ \t\n\r][\S\s]*)/
                  ) { |key,val,error|
+            orig_val = []
             if key then
               on_attribute key
               k=key
+              orig_val << val
               qmark = val.slice!(0,1)
               if val[-1] == qmark[0] then
                 val.chop!
-                scan_attvalue val unless val.empty?
+                scan_attr_value val unless val.empty?
               else
-                scan_attvalue val unless val.empty?
+                scan_attr_value val unless val.empty?
                 begin
                   s = @src.get
+                  orig << s.dup
+                  #STDERR << "get some more? #{s.inspect}, #{orig.inspect}\n"
                   unless s then
                     parse_error "unterminated attribute `#{key}' meets EOF"
                     break
                   end
                   c = s[0]
                   val, s = s.split(qmark, 2)
+                  orig_val << val
                   if c == ?< then
                     wellformed_error "`<' is found in attribute `#{key}'"
                   elsif c != ?> then
-                    scan_attvalue '>'
+                    STDERR << "close in quote? #{c.inspect}, #{s.inspect}, #{val.inspect}, #{orig.inspect}, #{orig_val.inspect}\n"
+                    orig << ?>
+                    orig_val << ?>; scan_attr_value ?>
                   end
-                  scan_attvalue val if c
+                  scan_attr_value val if c
                 end until s
                 continue = s      # if eof then continue is false, else true.
               end
-              hash[k.to_sym] = val
-              STDERR << "attr end #{hash.inspect}, #{k}, #{val}\n"
-              on_attribute_end key
+              hash[k] = orig_val*''
+              #STDERR << "attr end #{hash.inspect}, #{k}, #{val}\n"
+              on_attribute_end key #, orig_val*''
             elsif error then
               continue = s = found_stag_error(error)
             else
@@ -833,10 +842,11 @@ module XMLScan
           end
         end
         if emptyelem then
-          on_stag_end_empty name, "<#{name}#{s}>", hash
+          on_stag_end_empty name, orig*''+?>, hash
         else
-          STDERR << "on stag end #{ name}, \"<#{name}#{s}>\", #{hash.inspect}\n"
-          on_stag_end name, "<#{name}#{s}>", hash
+          #STDERR << "on stag end #{ name}, \"<#{name}#{s}>\", #{hash.inspect}\n"
+          on_stag_end name, orig*''+?>, hash
+          #on_stag_end name, "<#{name}#{s}>", hash
         end
       end
     end
@@ -845,7 +855,7 @@ module XMLScan
     def scan_bang_tag(s)
       parse_error "parse error at `<!'"
       s << '>' if @src.close_tag
-      on_chardata s, s
+      on_chardata s
     end
 
 

@@ -146,14 +146,14 @@ module XMLScan
     include Visitor
 
     def initialize(visitor)
-      STDERR << "new Decoration #{visitor}\n"
+      #STDERR << "new Decoration #{visitor}\n"
       @visitor = visitor
     end
 
     Visitor.instance_methods.each { |i|
+          #STDERR << "#{i} \#{args.inspect}\\n"
       module_eval <<-END, __FILE__, __LINE__ + 1
         def #{i}(*args)
-          STDERR << "#{i} \#{args.inspect}\\n"
           @visitor&&@visitor.#{i}(*args)
         end
       END

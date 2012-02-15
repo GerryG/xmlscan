@@ -140,17 +140,17 @@ module XMLScan
       # @visitor.on_stag_end name
       # @elem.pop
       # @visitor.on_etag name
-      @visitor.on_stag_end_empty name, a[0]
+      @visitor.on_stag_end_empty name, *a
       @elem.pop
     end
 
     def on_etag(name, *a)
       last = @elem.pop
       if last == name then
-        @visitor.on_etag name, a[0]
+        @visitor.on_etag name, *a
       elsif last then
         wellformed_error "element type `#{name}' is not matched"
-        @visitor.on_etag last, a[0]
+        @visitor.on_etag last, *a
       else
         parse_error "end tag `#{name}' appears alone"
       end

@@ -127,7 +127,7 @@ module XMLScan
             return found_empty_stag
           else
             parse_error "parse error at `<'"
-            return on_chardata('<')
+            return on_chardata '<'
           end
         end
         on_stag name
@@ -142,7 +142,7 @@ module XMLScan
           if @src.close_tag then
             s << '>'
           end
-          return on_chardata('<' << s)
+          return on_chardata '<'+s
         end
         on_stag name
         begin

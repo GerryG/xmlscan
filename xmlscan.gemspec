@@ -19,10 +19,12 @@ Gem::Specification.new do |s|
     "ChangeLog",
     "Gemfile",
     "Gemfile.lock",
+    "README.processor",
     "README.rdoc",
     "Rakefile",
     "THANKS",
     "VERSION",
+    "install.rb",
     "lib/xmlscan/htmlscan.rb",
     "lib/xmlscan/namespace.rb",
     "lib/xmlscan/parser.rb",
@@ -30,7 +32,9 @@ Gem::Specification.new do |s|
     "lib/xmlscan/scanner.rb",
     "lib/xmlscan/version.rb",
     "lib/xmlscan/visitor.rb",
-    "lib/xmlscan/xmlchar.rb"
+    "lib/xmlscan/xmlchar.rb",
+    "test.rb",
+    "xmlcard.rb"
   ]
   s.homepage = "http://github.com/GerryG/xmlformat/"
   s.licenses = ["MIT"]

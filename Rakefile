@@ -3,6 +3,9 @@
 
 require 'rubygems'
 require 'bundler'
+require 'xmlscan/version'
+
+VERSION = XMLScan::VERSION # File.exist?('VERSION') ? File.read('VERSION') : ""
 
 begin
   Bundler.setup(:default, :development)
@@ -15,10 +18,11 @@ end
 require 'rake'
 
 begin
+  include XMLScan
     require 'jeweler'
     Jeweler::Tasks.new do |gem|
-      gem.name = "xmlscan"
-      gem.version = '0.2.3'
+      gem.name = 'xmlscan'
+      gem.version = XMLScan::VERSION
       gem.license = "MIT"
       gem.summary = "The fastest XML parser written in 100% pure Ruby."
       gem.email = "gerryg@inbox.com"
@@ -56,10 +60,9 @@ task :default => :spec
 
 require 'rdoc/task'
 Rake::RDocTask.new do |rdoc|
-  version = File.exist?('VERSION') ? File.read('VERSION') : ""
 
   rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "xmlscan #{version}"
+  rdoc.title = "xmlscan #{VERSION}"
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end

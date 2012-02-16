@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = "xmlscan"
-  s.version = "0.3.0prea"
+  s.version = "0.3.0preb"
 
   s.required_rubygems_version = Gem::Requirement.new("> 1.3.1") if s.respond_to? :required_rubygems_version=
   s.authors = ["UENO Katsuhiro <katsu@blue.sky.or.jp>"]
@@ -19,12 +19,10 @@ Gem::Specification.new do |s|
     "ChangeLog",
     "Gemfile",
     "Gemfile.lock",
-    "README.processor",
     "README.rdoc",
     "Rakefile",
     "THANKS",
     "VERSION",
-    "install.rb",
     "lib/xmlscan/htmlscan.rb",
     "lib/xmlscan/namespace.rb",
     "lib/xmlscan/parser.rb",
@@ -32,9 +30,7 @@ Gem::Specification.new do |s|
     "lib/xmlscan/scanner.rb",
     "lib/xmlscan/version.rb",
     "lib/xmlscan/visitor.rb",
-    "lib/xmlscan/xmlchar.rb",
-    "test.rb",
-    "xmlcard.rb"
+    "lib/xmlscan/xmlchar.rb"
   ]
   s.homepage = "http://github.com/GerryG/xmlformat/"
   s.licenses = ["MIT"]

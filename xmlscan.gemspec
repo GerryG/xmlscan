@@ -5,9 +5,9 @@
 
 Gem::Specification.new do |s|
   s.name = "xmlscan"
-  s.version = "0.3.0pre"
+  s.version = "0.2.3"
 
-  s.required_rubygems_version = Gem::Requirement.new("> 1.3.1") if s.respond_to? :required_rubygems_version=
+  s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["UENO Katsuhiro <katsu@blue.sky.or.jp>"]
   s.date = "2012-02-16"
   s.description = "The fastest XML parser written in 100% pure Ruby."

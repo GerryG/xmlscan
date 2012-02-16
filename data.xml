@@ -1,8 +1,0 @@
-<card name="foo" transclude="{{foo|titled}}">Some
-  <card name="name">Name data</card> and &lt; &gt;
- <p>para data<b>bold</b>
-   </p><br/>
- more<card
-   name="+hello" attr="&quote;foo&quote;"> and <card name="+nested">nested twice data</card>
-  </card>
-</card>

@@ -413,6 +413,7 @@ module XMLScan
     end
 
     def on_entityref(ref, *a)
+      STDERR << "v.oeref #{ref}, #{a.inspect}\n"
       @visitor.on_entityref ref, *a
     end
 
@@ -552,6 +553,7 @@ module XMLScan
             orig = ?& + (ref = $`) + ?;
             s = $'
             if /\A[^#]/ =~ ref then
+              STDERR << "oeref #{ref}, #{orig.inspect}\n"
               on_entityref ref, orig
             elsif /\A#(\d+)\z/ =~ ref then
               on_charref $1.to_i, orig

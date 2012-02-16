@@ -115,95 +115,95 @@ module XMLScan
       end
 
 
-      def on_xmldecl_version(str)
+      def on_xmldecl_version(str, *a)
         check_valid_version str
         super
       end
 
-      def on_xmldecl_encoding(str)
+      def on_xmldecl_encoding(str, *a)
         check_valid_encoding str
         super
       end
 
-      def on_xmldecl_standalone(str)
+      def on_xmldecl_standalone(str, *a)
         check_valid_chardata str
         super
       end
 
-      def on_doctype(root, pubid, sysid)
+      def on_doctype(root, pubid, sysid, *a)
         check_valid_name root
         check_valid_pubid pubid if pubid
         check_valid_chardata sysid if sysid
         super
       end
 
-      def on_comment(str)
+      def on_comment(str, *a)
         check_valid_chardata str
         super
       end
 
-      def on_pi(target, pi)
+      def on_pi(target, pi, *a)
         check_valid_name target
         check_valid_chardata pi
         super
       end
 
-      def on_chardata(str)
+      def on_chardata(str, *a)
         check_valid_chardata str
         super
       end
 
-      def on_cdata(str)
+      def on_cdata(str, *a)
         check_valid_chardata str
         super
       end
 
-      def on_etag(name)
+      def on_etag(name, *a)
         check_valid_name name
         super
       end
 
-      def on_entityref(ref)
+      def on_entityref(ref, *a)
         check_valid_name ref
         super
       end
 
-      def on_charref(code)
+      def on_charref(code, *a)
         check_valid_char code
         super
       end
 
-      def on_charref_hex(code)
+      def on_charref_hex(code, *a)
         check_valid_char code
         super
       end
 
-      def on_stag(name)
+      def on_stag(name, *a)
         check_valid_name name
         super
       end
 
-      def on_attribute(name)
+      def on_attribute(name, *a)
         check_valid_name name
         super
       end
 
-      def on_attr_value(str)
+      def on_attr_value(str, *a)
         check_valid_chardata str
         super
       end
 
-      def on_attr_entityref(ref)
+      def on_attr_entityref(ref, *a)
         check_valid_name ref
         super
       end
 
-      def on_attr_charref(code)
+      def on_attr_charref(code, *a)
         check_valid_char code
         super
       end
 
-      def on_attr_charref_hex(code)
+      def on_attr_charref_hex(code, *a)
         check_valid_char code
         super
       end

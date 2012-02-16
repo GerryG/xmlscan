@@ -54,16 +54,16 @@ module XMLScan
     #       on_stag_end_empty_ns ('foo:bar', { 'foo' => '', ... })
     #
 
-    def on_stag_ns(qname, prefix, localpart)
+    def on_stag_ns(qname, prefix, localpart, *a)
     end
 
-    def on_attribute_ns(qname, prefix, localpart)
+    def on_attribute_ns(qname, prefix, localpart, *a)
     end
 
-    def on_stag_end_ns(qname, namespaces)
+    def on_stag_end_ns(qname, namespaces, *a)
     end
 
-    def on_stag_end_empty_ns(qname, namespaces)
+    def on_stag_end_empty_ns(qname, namespaces, *a)
     end
 
   end
@@ -99,7 +99,7 @@ module XMLScan
     end
 
 
-    def on_start_document
+    def on_start_document(*a)
       @namespace = {} #PredefinedNamespace.dup
       @ns_hist = []
       @ns_undeclared = {}     # for checking undeclared namespace prefixes.
@@ -107,14 +107,14 @@ module XMLScan
       @dont_same = []         # ditto.
       @xmlns = NamespaceDeclaration.new(self)
       @orig_visitor = @visitor
-      @visitor.on_start_document
+      @visitor.on_start_document *a
     end
 
 
-    def on_stag(name)
+    def on_stag(name, *a)
       @ns_hist.push nil
       unless /:/n =~ name then
-        @visitor.on_stag_ns name, '', name
+        @visitor.on_stag_ns name, '', name, *a
       else
         prefix, localpart = $`, $'
         if localpart.include? ?: then
@@ -131,12 +131,12 @@ module XMLScan
             @ns_undeclared[prefix] = true
           end
         end
-        @visitor.on_stag_ns name, prefix, localpart
+        @visitor.on_stag_ns name, prefix, localpart, *a
       end
     end
 
 
-    def on_attribute(name)
+    def on_attribute(name, *a)
       if /:/n =~ name then
         prefix, localpart = $`, $'
         if localpart.include? ?: then
@@ -157,13 +157,13 @@ module XMLScan
             @dont_same.push [ prev, prefix, localpart ]
           end
           @prev_prefix[localpart] = prefix
-          @visitor.on_attribute_ns name, prefix, localpart
+          @visitor.on_attribute_ns name, prefix, localpart, *a
         end
       elsif name == 'xmlns' then
         @visitor = @xmlns
         @xmlns.on_xmlns_start ''
       else
-        @visitor.on_attribute_ns name, nil, name
+        @visitor.on_attribute_ns name, nil, name, *a
       end
     end
 
@@ -176,36 +176,36 @@ module XMLScan
         @parent = parent
       end
 
-      def on_xmlns_start(prefix)
+      def on_xmlns_start(prefix, *a)
         @prefix = prefix
         @nsdecl = ''
       end
 
-      def on_attr_value(str)
+      def on_attr_value(str, *a)
         @nsdecl << str
       end
 
-      def on_attr_entityref(ref)
+      def on_attr_entityref(ref, *a)
         @parent.ns_wellformed_error \
           "xmlns includes undeclared entity reference"
       end
 
-      def on_attr_charref(code)
+      def on_attr_charref(code, *a)
         @nsdecl << [code].pack('U')
       end
 
-      def on_attr_charref_hex(code)
+      def on_attr_charref_hex(code, *a)
         @nsdecl << [code].pack('U')
       end
 
-      def on_attribute_end(name)
+      def on_attribute_end(name, *a)
         @parent.on_xmlns_end @prefix, @nsdecl
       end
 
     end
 
 
-    def on_xmlns_end(prefix, uri)
+    def on_xmlns_end(prefix, uri, *a)
       @visitor = @orig_visitor
       if PredefinedNamespace.key? prefix then
         if prefix == 'xmlns' then
@@ -254,54 +254,54 @@ module XMLScan
     end
 
 
-    def on_stag_end(name)
+    def on_stag_end(name, *a)
       fix_namespace
-      @visitor.on_stag_end_ns name, @namespace
+      @visitor.on_stag_end_ns name, @namespace, *a
     end
 
 
-    def on_etag(name)
+    def on_etag(name, *a)
       h = @ns_hist.pop and @namespace.update h
-      @visitor.on_etag name
+      @visitor.on_etag name, *a
     end
 
 
-    def on_stag_end_empty(name)
+    def on_stag_end_empty(name, *a)
       fix_namespace
-      @visitor.on_stag_end_empty_ns name, @namespace
+      @visitor.on_stag_end_empty_ns name, @namespace, *a
       h = @ns_hist.pop and @namespace.update h
     end
 
 
-    def on_doctype(root, pubid, sysid)
+    def on_doctype(root, pubid, sysid, *a)
       if root.count(':') > 1 then
         ns_parse_error "qualified name `#{root}' includes `:'"
       end
-      @visitor.on_doctype root, pubid, sysid
+      @visitor.on_doctype root, pubid, sysid, *a
     end
 
 
-    def on_pi(target, pi)
+    def on_pi(target, pi, *a)
       if target.include? ?: then
         ns_parse_error "PI target `#{target}' includes `:'"
       end
-      @visitor.on_pi target, pi
+      @visitor.on_pi target, pi, *a
     end
 
 
-    def on_entityref(ref)
+    def on_entityref(ref, *a)
       if ref.include? ?: then
         ns_parse_error "entity reference `#{ref}' includes `:'"
       end
-      @visitor.on_entityref ref
+      @visitor.on_entityref ref, *a
     end
 
 
-    def on_attr_entityref(ref)
+    def on_attr_entityref(ref, *a)
       if ref.include? ?: then
         ns_parse_error "entity reference `#{ref}' includes `:'"
       end
-      @visitor.on_attr_entityref ref
+      @visitor.on_attr_entityref ref, *a
     end
 
   end

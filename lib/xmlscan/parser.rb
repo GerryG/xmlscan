@@ -43,7 +43,7 @@ module XMLScan
 
     private
 
-    def on_xmldecl_version(str)
+    def on_xmldecl_version(str, *a)
       unless str == '1.0' then
         warning "unsupported XML version `#{str}'"
       end
@@ -51,7 +51,7 @@ module XMLScan
     end
 
 
-    def on_xmldecl_standalone(str)
+    def on_xmldecl_standalone(str, *a)
       if str == 'yes' then
         @standalone = true
       elsif str == 'no' then
@@ -63,7 +63,7 @@ module XMLScan
     end
 
 
-    def on_doctype(name, pubid, sysid)
+    def on_doctype(name, pubid, sysid, *a)
       if pubid and not sysid then
         parse_error "public external ID must have both public ID and system ID"
       end
@@ -71,12 +71,12 @@ module XMLScan
     end
 
 
-    def on_prolog_space(s)
+    def on_prolog_space(s, *a)
       # just ignore it.
     end
 
 
-    def on_pi(target, pi)
+    def on_pi(target, pi, *a)
       if target.downcase == 'xml' then
         parse_error "reserved PI target `#{target}'"
       end
@@ -114,39 +114,43 @@ module XMLScan
     #end
 
 
-    def on_stag(name)
+    def on_stag(name, *a)
       @elem.push name
       @visitor.on_stag name
       @attr.clear
     end
 
-    def on_attribute(name)
+    def on_attribute(name, *a)
       unless @attr.check_unique name then
         wellformed_error "doubled attribute `#{name}'"
       end
       @visitor.on_attribute name
     end
 
-    def on_attr_value(str)
+    def on_attr_value(str, *a)
       str.tr! "\t\r\n", ' '   # normalize
       @visitor.on_attr_value str
     end
 
-    def on_stag_end_empty(name)
+    def on_stag_end(name, *a)
+      @visitor.on_stag_end name, *a
+    end
+
+    def on_stag_end_empty(name, *a)
       # @visitor.on_stag_end name
       # @elem.pop
       # @visitor.on_etag name
-      @visitor.on_stag_end_empty name
+      @visitor.on_stag_end_empty name, *a
       @elem.pop
     end
 
-    def on_etag(name)
+    def on_etag(name, *a)
       last = @elem.pop
       if last == name then
-        @visitor.on_etag name
+        @visitor.on_etag name, *a
       elsif last then
         wellformed_error "element type `#{name}' is not matched"
-        @visitor.on_etag last
+        @visitor.on_etag last, *a
       else
         parse_error "end tag `#{name}' appears alone"
       end

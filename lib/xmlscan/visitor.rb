@@ -54,88 +54,88 @@ module XMLScan
     def warning(msg)
     end
 
-    def on_xmldecl
+    def on_xmldecl(*a)
     end
 
-    def on_xmldecl_key(key, str)
+    def on_xmldecl_key(key, str, *a)
     end
 
-    def on_xmldecl_version(str)
+    def on_xmldecl_version(str, *a)
     end
 
-    def on_xmldecl_encoding(str)
+    def on_xmldecl_encoding(str, *a)
     end
 
-    def on_xmldecl_standalone(str)
+    def on_xmldecl_standalone(str, *a)
     end
 
-    def on_xmldecl_other(name, value)
+    def on_xmldecl_other(name, value, *a)
     end
 
-    def on_xmldecl_end
+    def on_xmldecl_end(*a)
     end
 
-    def on_doctype(root, pubid, sysid)
+    def on_doctype(root, pubid, sysid, *a)
     end
 
-    def on_prolog_space(str)
+    def on_prolog_space(str, *a)
     end
 
-    def on_comment(str)
+    def on_comment(str, *a)
     end
 
-    def on_pi(target, pi)
+    def on_pi(target, pi, *a)
     end
 
-    def on_chardata(str)
+    def on_chardata(str, *a)
     end
 
-    def on_cdata(str)
+    def on_cdata(str, *a)
     end
 
-    def on_etag(name)
+    def on_etag(name, *a)
     end
 
-    def on_entityref(ref)
+    def on_entityref(ref, *a)
     end
 
-    def on_charref(code)
+    def on_charref(code, *a)
     end
 
-    def on_charref_hex(code)
+    def on_charref_hex(code, *a)
     end
 
-    def on_start_document
+    def on_start_document(*a)
     end
 
-    def on_end_document
+    def on_end_document(*a)
     end
 
-    def on_stag(name)
+    def on_stag(name, *a)
     end
 
-    def on_attribute(name)
+    def on_attribute(name, *a)
     end
 
-    def on_attr_value(str)
+    def on_attr_value(str, *a)
     end
 
-    def on_attr_entityref(ref)
+    def on_attr_entityref(ref, *a)
     end
 
-    def on_attr_charref(code)
+    def on_attr_charref(code, *a)
     end
 
-    def on_attr_charref_hex(code)
+    def on_attr_charref_hex(code, *a)
     end
 
-    def on_attribute_end(name)
+    def on_attribute_end(name, *a)
     end
 
-    def on_stag_end_empty(name)
+    def on_stag_end_empty(name, *a)
     end
 
-    def on_stag_end(name)
+    def on_stag_end(name, *a)
     end
 
   end
@@ -146,13 +146,15 @@ module XMLScan
     include Visitor
 
     def initialize(visitor)
+      #STDERR << "new Decoration #{visitor}\n"
       @visitor = visitor
     end
 
     Visitor.instance_methods.each { |i|
+          #STDERR << "#{i} \#{args.inspect}\\n"
       module_eval <<-END, __FILE__, __LINE__ + 1
         def #{i}(*args)
-          @visitor.#{i}(*args)
+          @visitor&&@visitor.#{i}(*args)
         end
       END
     }

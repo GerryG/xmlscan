@@ -684,10 +684,10 @@ class TestHTMLScannerCDATA < Test::Unit::TestCase
     def make_scanner
       @scanner = XMLScan::HTMLScanner.new(self)
     end
-    def on_stag_end(name)
+    def on_stag_end(name, *a)
       super
       s = @scanner.get_cdata_content
-      @result.push [ :cdata_content, s ]
+      @result.push [ :cdata_content, s, *a ]
     end
   end
 
@@ -713,19 +713,19 @@ class TestHTMLScannerCDATA < Test::Unit::TestCase
   [ :on_stag, 'hoge' ]
   [ :on_stag_end, 'hoge' ]
   [ :cdata_content, 'fuga' ]
-  [ :on_etag, 'hoge' ]
+  [ :on_etag, 'hoge', '</hoge>' ]
 
   '<hoge>fuga<foo><bar>fuga</hoge>'
   [ :on_stag, 'hoge' ]
   [ :on_stag_end, 'hoge' ]
   [ :cdata_content, 'fuga<foo><bar>fuga' ]
-  [ :on_etag, 'hoge' ]
+  [ :on_etag, 'hoge', '</hoge>' ]
 
   '<hoge>><><><<><a><>><></hoge>'
   [ :on_stag, 'hoge' ]
   [ :on_stag_end, 'hoge' ]
   [ :cdata_content, '><><><<><a><>><>' ]
-  [ :on_etag, 'hoge' ]
+  [ :on_etag, 'hoge', '</hoge>' ]
 
   '<hoge>fuga</'
   [ :on_stag, 'hoge' ]

@@ -1,0 +1,12 @@
+<card name="foo" transclude='{{_main}}' type='Basic'>
+  <card name='+profile' type='Profile' transclude="{{+profile|titled}}">Some
+  <card name="+name" type='Phrase'>Name data</card> and &lt; &gt;
+  <div class='foobar'><p>para data<b>bold</b>
+  </p><br/></div>
+ </card>
+ more<card
+   name="bar+hello"
+   transclude='{{Bar+Hello}}'
+   attr="&quote;foo&quote;"> and <card name="+nested">nested twice data</card>
+  </card>
+</card>

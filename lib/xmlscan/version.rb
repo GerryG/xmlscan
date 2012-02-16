@@ -10,8 +10,8 @@
 module XMLScan
 
   GEMNAME = 'xmlscan'
-  VERSION_FILE = 'VERSION'
+  VERSION_FILE = File.expand_path('../../VERSION', File.dirname(__FILE__))
   VERSION = open(VERSION_FILE).to_a*''.chop
-  RELEASE_DATE = open('VERSION').mtime.strftime('%Y-%m-%d')
+  RELEASE_DATE = open(VERSION_FILE).mtime.strftime('%Y-%m-%d')
 
 end

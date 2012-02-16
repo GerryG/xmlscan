@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["UENO Katsuhiro <katsu@blue.sky.or.jp>"]
-  s.date = "2012-02-13"
+  s.date = "2012-02-16"
   s.description = "The fastest XML parser written in 100% pure Ruby."
   s.email = "gerryg@inbox.com"
   s.extra_rdoc_files = [

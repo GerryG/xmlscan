@@ -20,6 +20,7 @@ module MyVisitor
       @context = ''  # current key(name) of the element (card)
       @stack = []    # stack of containing context cards
       @out = []      # current output for name(card)
+      @parser = XMLScan::XMLParser.new(self)
       self
     end
 
@@ -33,7 +34,6 @@ module MyVisitor
         # then push the current context and initialize this one
         @stack.push([@context, @out, @type])
         @context = key; @out = []; @type = h['type']
-        STDERR << "sTag: #{sub.inspect} #{@context}, S:#{@stack.inspect}, O:#{@out.inspect}\n" #{caller*"\n"}\n"
       else @out << s end # pass through tags we aren't processing
     end
 
@@ -53,19 +53,17 @@ module MyVisitor
       else @out << s end
     end
 
-    attr_reader :pairs
+    attr_reader :pairs, :parser
   end
 
   class MyProcessor
     include ElementProcessor
 
     def self.process(file)
-      io = IO===file ? file : open(file)
-      raise "Not readable #{file.inspect}" unless IO===io
-      visitor = MyVisitor::MyProcessor.new
-      parser = XMLScan::XMLParser.new visitor
-      parser.parse io
-
+      raise "Not readable #{file.inspect}" unless IO===( io =
+                                             IO===file ? file : open(file) )
+      visitor = new
+      visitor.parser.parse(io)
       visitor.pairs
     end
   end
@@ -73,11 +71,10 @@ module MyVisitor
 end
 
 ARGV.each do |a|
-  STDERR << "opening #{a.inspect}\n"
   pairs = MyVisitor::MyProcessor.process(a)
-  STDERR << "Result\n"
-  STDERR << pairs.map do |p| n,o,t,c = p
+  STDOUT << "Result\n"
+  STDOUT << pairs.map do |p| n,o,t,c = p
       "#{c&&c.size>0&&"#{c}::"||''}#{n}#{t&&"[#{t}]"}=>#{o*''}"
     end * "\n"
-  STDERR << "\nDone\n"
+  STDOUT << "\nDone\n"
 end

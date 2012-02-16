@@ -437,7 +437,7 @@ class TestXMLNamespace < Test::Unit::TestCase
   [ :on_stag_ns, 'hoge', '', 'hoge' ]
   [ :on_attribute_ns, 'fuga', nil, 'fuga' ]
   [ :ns_parse_error, "entity reference `foo:bar' includes `:'" ]
-  [ :on_attr_entityref, 'foo:bar' ]
+  [ :on_attr_entityref, 'foo:bar', '&foo:bar;' ]
   [ :on_attribute_end, 'fuga' ]
   [ :on_stag_end_empty_ns, 'hoge', {}, '<hoge fuga="&foo:bar;"/>', {'fuga'=>"&foo:bar;"} ]
 

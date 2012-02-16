@@ -687,7 +687,7 @@ class TestHTMLScannerCDATA < Test::Unit::TestCase
     def on_stag_end(name, *a)
       super
       s = @scanner.get_cdata_content
-      @result.push [ :cdata_content, *a ]
+      @result.push [ :cdata_content, s, *a ]
     end
   end
 
@@ -712,37 +712,37 @@ class TestHTMLScannerCDATA < Test::Unit::TestCase
   '<hoge>fuga</hoge>'
   [ :on_stag, 'hoge' ]
   [ :on_stag_end, 'hoge' ]
-  [ :cdata_content, 'fuga', 'fuga' ]
+  [ :cdata_content, 'fuga' ]
   [ :on_etag, 'hoge', '</hoge>' ]
 
   '<hoge>fuga<foo><bar>fuga</hoge>'
   [ :on_stag, 'hoge' ]
   [ :on_stag_end, 'hoge' ]
-  [ :cdata_content, 'fuga<foo><bar>fuga', 'fuga<foo><bar>fuga' ]
+  [ :cdata_content, 'fuga<foo><bar>fuga' ]
   [ :on_etag, 'hoge', '</hoge>' ]
 
   '<hoge>><><><<><a><>><></hoge>'
   [ :on_stag, 'hoge' ]
   [ :on_stag_end, 'hoge' ]
-  [ :cdata_content, '><><><<><a><>><>', '><><><<><a><>><>' ]
+  [ :cdata_content, '><><><<><a><>><>' ]
   [ :on_etag, 'hoge', '</hoge>' ]
 
   '<hoge>fuga</'
   [ :on_stag, 'hoge' ]
   [ :on_stag_end, 'hoge' ]
-  [ :cdata_content, 'fuga', 'fuga</' ]
+  [ :cdata_content, 'fuga' ]
   [ :parse_error, "parse error at `</'" ]
   [ :on_chardata, '</' ]
 
   '<hoge>fuga<'
   [ :on_stag, 'hoge' ]
-  [ :on_stag_end, 'hoge', '<hoge>' ]
-  [ :cdata_content, 'fuga<', 'fuga<' ]
+  [ :on_stag_end, 'hoge' ]
+  [ :cdata_content, 'fuga<' ]
 
   '<hoge>fuga>'
   [ :on_stag, 'hoge' ]
-  [ :on_stag_end, 'hoge', '<hoge>' ]
-  [ :cdata_content, 'fuga>', 'fuga>' ]
+  [ :on_stag_end, 'hoge' ]
+  [ :cdata_content, 'fuga>' ]
 
   TESTCASEEND
 

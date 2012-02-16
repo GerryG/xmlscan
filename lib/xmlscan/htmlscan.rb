@@ -156,9 +156,9 @@ module XMLScan
                 qmark = val.slice!(0,1)
                 if val[-1] == qmark[0] then
                   val.chop!
-                  scan_attvalue val unless val.empty?
+                  scan_attr_value val unless val.empty?
                 else
-                  scan_attvalue val unless val.empty?
+                  scan_attr_value val unless val.empty?
                   begin
                     s = @src.get
                     unless s then
@@ -167,8 +167,8 @@ module XMLScan
                     end
                     c = s[0]
                     val, s = s.split(qmark, 2)
-                    scan_attvalue '>' unless c == ?< or c == ?>
-                    scan_attvalue val if c
+                    scan_attr_value '>' unless c == ?< or c == ?>
+                    scan_attr_value val if c
                   end until s
                   continue = s
                 end

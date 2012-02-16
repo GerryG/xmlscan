@@ -536,7 +536,7 @@ module XMLScan
         else
           s = $`
           on_chardata s unless s.empty?
-          orig = $'
+          #orig = $'.sub(/(?=;).*$/,'')
           ref = nil
           $'.split('&', -1).each { |s|
             unless /(?!\A);|(?=[ \t\r\n])/ =~ s and not $&.empty? then
@@ -549,14 +549,14 @@ module XMLScan
                 next
               end
             end
-            ref = $`
+            orig = ?& + (ref = $`) + ?;
             s = $'
             if /\A[^#]/ =~ ref then
-              on_entityref ref, '&'+orig
+              on_entityref ref, orig
             elsif /\A#(\d+)\z/ =~ ref then
-              on_charref $1.to_i, '&'+orig
+              on_charref $1.to_i, orig
             elsif /\A#x([\dA-Fa-f]+)\z/ =~ ref then
-              on_charref_hex $1.hex, '&'+orig
+              on_charref_hex $1.hex, orig
             else
               parse_error "invalid character reference `#{ref}'"
             end
@@ -589,14 +589,14 @@ module XMLScan
               next
             end
           end
-          ref = $`
+          orig = ?& + (ref = $`) + ?;
           s = $'
           if /\A[^#]/ =~ ref then
-            on_attr_entityref ref
+            on_attr_entityref ref, orig
           elsif /\A#(\d+)\z/ =~ ref then
-            on_attr_charref $1.to_i
+            on_attr_charref $1.to_i, orig
           elsif /\A#x([\dA-Fa-f]+)\z/ =~ ref then
-            on_attr_charref_hex $1.hex
+            on_attr_charref_hex $1.hex, orig
           else
             parse_error "invalid character reference `#{ref}'"
           end
@@ -804,28 +804,29 @@ module XMLScan
                 scan_attr_value val unless val.empty?
                 begin
                   s = @src.get
-                  orig << s.dup
                   #STDERR << "get some more? #{s.inspect}, #{orig.inspect}\n"
                   unless s then
                     parse_error "unterminated attribute `#{key}' meets EOF"
                     break
                   end
+                  orig << s.dup
                   c = s[0]
                   val, s = s.split(qmark, 2)
                   orig_val << val
                   if c == ?< then
                     wellformed_error "`<' is found in attribute `#{key}'"
                   elsif c != ?> then
-                    STDERR << "close in quote? #{c.inspect}, #{s.inspect}, #{val.inspect}, #{orig.inspect}, #{orig_val.inspect}\n"
-                    orig << ?>
-                    orig_val << ?>; scan_attr_value ?>
+                    #STDERR << "close in quote? #{c.inspect}, #{@src.tag_start?}, #{@src.tag_end?}, #{s.inspect}, #{val.inspect}, #{orig.inspect}, #{orig_val.inspect}\n"
+                    orig_val[-1,0] = orig[-1,0] = ?> # if @src.tag_start?
+                    scan_attr_value ?>
                   end
                   scan_attr_value val if c
                 end until s
                 continue = s      # if eof then continue is false, else true.
               end
+              #STDERR << "attr:#{k}, #{orig_val}\n"
               hash[k] = orig_val*''
-              #STDERR << "attr end #{hash.inspect}, #{k}, #{val}\n"
+              #STDERR << "attr end #{hash.inspect}, #{k}, #{orig_val}\n"
               on_attribute_end key #, orig_val*''
             elsif error then
               continue = s = found_stag_error(error)
